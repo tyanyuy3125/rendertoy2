@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <type_traits>
+#include <algorithm>
 
 #include "rendertoy_internal.h"
 #include "intersectinfo.h"

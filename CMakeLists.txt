@@ -12,7 +12,7 @@ project(RenderToy2 VERSION 0.1.0 LANGUAGES C CXX)
 include(CTest)
 enable_testing()
 
-add_library(RenderToy2 SHARED primitive.h primitive.cpp
+add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               accelerate.h accelerate.cpp
                               intersectinfo.h
                               rendertoy_internal.h
@@ -21,7 +21,7 @@ add_library(RenderToy2 SHARED primitive.h primitive.cpp
                               renderer.h renderer.cpp)
 
 find_package(glm REQUIRED)
-target_link_libraries(RenderToy2 PRIVATE glm::glm)
+target_link_libraries(RenderToy2 PUBLIC glm::glm)
 find_package(OpenImageIO REQUIRED)
 target_link_libraries(RenderToy2 PRIVATE OpenImageIO::OpenImageIO)
 # find_package(OpenImageDenoise REQUIRED)

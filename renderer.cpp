@@ -10,7 +10,7 @@ void rendertoy::TestRenderer::Render()
     {
         glm::float32 r = static_cast<glm::float32>(x) / static_cast<glm::float32>(width);
         glm::float32 g = static_cast<glm::float32>(y) / static_cast<glm::float32>(height);
-        glm::float32 b = 1.0f - r - b;
+        glm::float32 b = 1.0f - r - g;
         return glm::vec3{r, g, b};
     };
     _output.PixelShade(shader);

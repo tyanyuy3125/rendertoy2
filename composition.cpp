@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <OpenImageIO/imageio.h>
-#include <OpenImageDenoise/oidn.hpp>
 
 const glm::vec3 &rendertoy::Image::operator()(const int x, const int y) const
 {
