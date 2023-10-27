@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "rendertoy.h"
+#include "rendertoy_internal.h"
 
 namespace rendertoy
 {

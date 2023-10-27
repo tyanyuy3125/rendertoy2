@@ -2,27 +2,33 @@ message("Begin configuration...")
 if(WIN32)
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
     set(VCPKG_TARGET_TRIPLET "x64-windows")
-    set(PKG_CONFIG_EXECUTABLE "E:/pkg-config-lite-0.28-1/bin/pkg-config.exe")
-elseif(UNIX)
-    message(FATAL_ERROR "Not implemented")
 endif()
 message("Build type: ${CMAKE_BUILD_TYPE}")
 
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
+set(CMAKE_CXX_STANDARD 20)
 project(RenderToy2 VERSION 0.1.0 LANGUAGES C CXX)
 
 include(CTest)
 enable_testing()
 
-add_library(RenderToy2 RenderToy2.cpp primitive.h bbox.cpp bbox.h intersectinfo.h rendertoy.h)
+add_library(RenderToy2 SHARED primitive.h primitive.cpp
+                              accelerate.h accelerate.cpp
+                              intersectinfo.h
+                              rendertoy_internal.h
+                              scene.h scene.cpp
+                              composition.h composition.cpp
+                              renderer.h renderer.cpp)
 
 find_package(glm REQUIRED)
 target_link_libraries(RenderToy2 PRIVATE glm::glm)
+find_package(OpenImageIO REQUIRED)
+target_link_libraries(RenderToy2 PRIVATE OpenImageIO::OpenImageIO)
+# find_package(OpenImageDenoise REQUIRED)
+# target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-find_package(CTest REQUIRED)
-add_executable(RenderToyTests test_rendertoy.cpp)
-target_link_libraries(RenderToyTests PRIVATE RenderToy2 ctest)
+add_subdirectory(./executable)
