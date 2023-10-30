@@ -60,13 +60,13 @@ const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
     return BBox(_origin - glm::vec3(_radius), _origin + glm::vec3(_radius));
 }
 
-rendertoy::Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2)
-    : _vert{p0, p1, p2}
+rendertoy::Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec2 &t0, const glm::vec2 &t1, const glm::vec2 &t2)
+    : _vert{p0, p1, p2}, _uv{t0, t1, t2}
 {
 }
 
-rendertoy::Triangle::Triangle(const aiVector3D &p0, const aiVector3D &p1, const aiVector3D &p2)
-    : _vert{glm::vec3(p0.x, p0.y, p0.z), glm::vec3(p1.x, p1.y, p1.z), glm::vec3(p2.x, p2.y, p2.z)}
+rendertoy::Triangle::Triangle(const aiVector3D &p0, const aiVector3D &p1, const aiVector3D &p2, const aiVector2D &t0, const aiVector2D &t1, const aiVector2D &t2)
+    : _vert{glm::vec3(p0.x, p0.y, p0.z), glm::vec3(p1.x, p1.y, p1.z), glm::vec3(p2.x, p2.y, p2.z)}, _uv{glm::vec2(t0.x, t0.y), glm::vec2(t1.x, t1.y), glm::vec2(t2.x, t2.y)}
 {
 }
 

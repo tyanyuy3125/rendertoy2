@@ -33,7 +33,8 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               camera.h camera.cpp
                               texture.h texture.cpp
                               curve.h curve.cpp
-                              color.h color.cpp)
+                              color.h color.cpp
+                              material.h material.cpp)
 
 add_dependencies(RenderToy2 update_build_number)
 

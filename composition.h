@@ -10,7 +10,6 @@
 
 namespace rendertoy
 {
-
     typedef std::function<glm::vec4(const int, const int)> PixelShader;
 
     class Image
@@ -36,6 +35,8 @@ namespace rendertoy
         void PixelShade(const PixelShader &shader);
 
         const Image UpScale(const glm::float32 factor) const;
+
+        friend const Image ImportImageFromFile(const std::string &path);
     };
 
     enum class MixMode
