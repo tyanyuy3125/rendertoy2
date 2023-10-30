@@ -5,5 +5,6 @@
 #include "intersectinfo.h"
 #include "accelerate.h"
 #include "scene.h"
-#include "renderer.h"
+#include "renderwork.h"
 #include "composition.h"
+#include "importer.h"

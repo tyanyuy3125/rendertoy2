@@ -18,12 +18,17 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               rendertoy_internal.h
                               scene.h scene.cpp
                               composition.h composition.cpp
-                              renderer.h renderer.cpp)
+                              renderwork.h renderwork.cpp
+                              importer.h importer.cpp
+                              logger.h
+                              camera.h camera.cpp)
 
 find_package(glm REQUIRED)
 target_link_libraries(RenderToy2 PUBLIC glm::glm)
 find_package(OpenImageIO REQUIRED)
 target_link_libraries(RenderToy2 PRIVATE OpenImageIO::OpenImageIO)
+find_package(assimp REQUIRED)
+target_link_libraries(RenderToy2 PRIVATE assimp)
 # find_package(OpenImageDenoise REQUIRED)
 # target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
 

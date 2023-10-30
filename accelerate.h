@@ -5,6 +5,7 @@
 #include <memory>
 #include <type_traits>
 #include <algorithm>
+#include <stack>
 
 #include "rendertoy_internal.h"
 #include "intersectinfo.h"
@@ -18,8 +19,8 @@ namespace rendertoy
         glm::vec3 _pmax;
 
     public:
-        BBox() = delete;
         BBox(glm::vec3 pmin, glm::vec3 pmax) : _pmin(pmin), _pmax(pmax) {}
+        BBox() : BBox(glm::vec3{0.0f}, glm::vec3{0.0f}) {}
         const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction) const;
         const glm::vec3 GetCenter() const;
         void Union(const BBox &a);
@@ -56,8 +57,7 @@ namespace rendertoy
         {
             if (begin + 1 == end)
             {
-                node_tree.push_back(BVHNode{(*begin)->GetBoundingBox(), -1, -1});
-                return node_tree.size() - 1;
+                return std::distance(objects.begin(), begin);
             }
 
             BBox overall_bbox = (*begin)->GetBoundingBox();
@@ -76,29 +76,64 @@ namespace rendertoy
 
             return node_tree.size() - 1;
         }
-        const int RecursiveIntersect(const int node, const glm::vec3 &origin, const glm::vec3 &direction) const
-        {
-            if (node == -1 || node_tree[node]._bbox.Intersect(origin, direction) == false)
-            {
-                return -1;
-            }
-            else if (node < objects.size())
-            {
-                return node;
-            }
-            return std::max(RecursiveIntersect(node_tree[node].left, origin, direction), RecursiveIntersect(node_tree[node].right, origin, direction));
-        }
 
     public:
+        BVH() = default;
+        BVH(const BVH&) = delete;
+
         std::vector<std::unique_ptr<AccelerableObject>> objects;
         void Construct()
         {
             node_tree.resize(objects.size());
+            for(int i = 0;i<objects.size();++i)
+            {
+                node_tree[i]._bbox = objects[i]->GetBoundingBox();
+            }
             RecursiveConstruct(objects.begin(), objects.end());
         }
-        const int Intersect(const glm::vec3 &origin, const glm::vec3 &direction) const
+        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
         {
-            return RecursiveIntersect(node_tree.size() - 1, origin, direction);
+            IntersectInfo temp_intersect_info;
+            int closest_index = -1;
+
+            std::stack<int> traverse_stack;
+            traverse_stack.push(node_tree.size() - 1);
+            while(!traverse_stack.empty())
+            {
+                auto stack_top = traverse_stack.top();
+                traverse_stack.pop();
+                if(node_tree[stack_top]._bbox.Intersect(origin, direction))
+                {
+                    if(stack_top < objects.size())
+                    {
+                        if(objects[stack_top]->Intersect(origin, direction, temp_intersect_info))
+                        {
+                            if(closest_index == -1 || temp_intersect_info._t < intersect_info._t)
+                            {
+                                intersect_info = temp_intersect_info;
+                                closest_index = stack_top;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(node_tree[stack_top].right!=-1)
+                        {
+                            traverse_stack.push(node_tree[stack_top].right);
+                        }
+                        if(node_tree[stack_top].left!=-1)
+                        {
+                            traverse_stack.push(node_tree[stack_top].left);
+                        }
+                    }
+                }
+            }
+
+            if(closest_index == -1)
+            {
+                return false;
+            }
+            return true;
         }
     };
 }

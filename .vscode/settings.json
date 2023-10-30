@@ -54,6 +54,26 @@
         "vector": "cpp",
         "algorithm": "cpp",
         "functional": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "__std_stream": "cpp",
+        "__tree": "cpp",
+        "cfenv": "cpp",
+        "csignal": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "iomanip": "cpp",
+        "list": "cpp",
+        "set": "cpp",
+        "shared_mutex": "cpp",
+        "source_location": "cpp",
+        "span": "cpp",
+        "strstream": "cpp",
+        "thread": "cpp",
+        "typeindex": "cpp",
+        "unordered_set": "cpp",
+        "valarray": "cpp",
+        "stack": "cpp"
     }
 }
