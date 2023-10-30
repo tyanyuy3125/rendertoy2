@@ -74,6 +74,16 @@
         "typeindex": "cpp",
         "unordered_set": "cpp",
         "valarray": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "*.tcc": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "iterator": "cpp",
+        "memory_resource": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "*.ipp": "cpp"
     }
 }

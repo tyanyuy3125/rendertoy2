@@ -52,6 +52,7 @@ const bool rendertoy::UVSphere::Intersect(const glm::vec3 &origin, const glm::ve
     {
         intersect_info._normal = -intersect_info._normal;
     }
+    return true;
 }
 
 const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const

@@ -57,6 +57,7 @@ namespace rendertoy
         {
             if (begin + 1 == end)
             {
+                node_tree[std::distance(objects.begin(), begin)]._bbox = (*begin) -> GetBoundingBox();
                 return std::distance(objects.begin(), begin);
             }
 
@@ -85,10 +86,6 @@ namespace rendertoy
         void Construct()
         {
             node_tree.resize(objects.size());
-            for(int i = 0;i<objects.size();++i)
-            {
-                node_tree[i]._bbox = objects[i]->GetBoundingBox();
-            }
             RecursiveConstruct(objects.begin(), objects.end());
         }
         const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const

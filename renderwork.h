@@ -49,4 +49,12 @@ namespace rendertoy
         DepthBufferRenderWork() = delete;
         DepthBufferRenderWork(RenderConfig render_config);
     };
+
+    class NormalRenderWork : public IRenderWork
+    {
+    public:
+        virtual void Render();
+        NormalRenderWork() = delete;
+        NormalRenderWork(RenderConfig render_config);
+    };
 }

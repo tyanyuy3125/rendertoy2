@@ -8,3 +8,4 @@
 #include "renderwork.h"
 #include "composition.h"
 #include "importer.h"
+#include "dotfont.h"

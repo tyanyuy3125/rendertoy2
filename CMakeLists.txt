@@ -21,7 +21,10 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               renderwork.h renderwork.cpp
                               importer.h importer.cpp
                               logger.h
-                              camera.h camera.cpp)
+                              camera.h camera.cpp
+                              texture.h texture.cpp
+                              curve.h curve.cpp
+                              dotfont.h)
 
 find_package(glm REQUIRED)
 target_link_libraries(RenderToy2 PUBLIC glm::glm)

@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include <glm/glm.hpp>
+
 namespace rendertoy
 {
     enum class LogLevel
@@ -15,14 +17,14 @@ namespace rendertoy
         CRITICAL
     };
 
-    #define RESET   "\033[0m"
-    #define RED     "\033[31m"
-    #define GREEN   "\033[32m"
-    #define YELLOW  "\033[33m"
-    #define BLUE    "\033[34m"
-    #define MAGENTA "\033[35m"
-    #define CYAN    "\033[36m"
-    #define WHITE   "\033[37m"
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN "\033[36m"
+#define WHITE "\033[37m"
 
     const static std::string log_level_string[3] = {CYAN "INFO" RESET, YELLOW "WARN" RESET, RED "CRIT" RESET};
 
@@ -52,6 +54,18 @@ namespace rendertoy
             return *this;
         }
 
+        template <glm::length_t L>
+        Logger &operator<<(const glm::vec<L, float> &vector)
+        {
+            std::cout << '(';
+            for (int i = 0; i < L - 1; ++i)
+            {
+                std::cout << vector[i] << ',';
+            }
+            std::cout << vector[L - 1] << ')';
+            return *this;
+        }
+
         Logger &operator<<(std::__1::ostream &(*__pf)(std::__1::ostream &))
         {
             std::cout << __pf;
@@ -75,8 +89,8 @@ namespace rendertoy
         std::mutex mutex_;
     };
 
-    #define LOG Logger::instance()
-    #define INFO LOG << LogLevel::INFO
-    #define WARN LOG << LogLevel::WARNING
-    #define CRIT LOG << LogLevel::CRITICAL
+#define LOG Logger::instance()
+#define INFO LOG << LogLevel::INFO
+#define WARN LOG << LogLevel::WARNING
+#define CRIT LOG << LogLevel::CRITICAL
 }
