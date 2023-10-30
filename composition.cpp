@@ -100,7 +100,7 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
                 case MixMode::MAX:
                     ret(x, y) = glm::max(ret(x, y), layer._image->operator()(x - layer._position.x, y - layer._position.y));
                     break;
-                case MixMode::INVERT:
+                case MixMode::INVERT: {
                     auto color = layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     if(color[3] != 0.0f)
                     {
@@ -108,10 +108,12 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
                         ret(x, y) += glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
                     }
                     break;
-                case MixMode::NORMAL_CLAMP:
+                }
+                case MixMode::NORMAL_CLAMP: {
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     ret(x, y) = glm::clamp(ret(x, y), glm::vec4(0.0f), glm::vec4(1.0f));
                     break;
+                }
                 default:
                     break;
                 }

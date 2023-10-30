@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
+#include <glm/gtx/norm.hpp>
 
 const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction) const
 {
@@ -14,8 +15,10 @@ const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &
     glm::vec3 tmin = glm::min(t1, t2);
     glm::vec3 tmax = glm::max(t1, t2);
 
-    float t_enter = glm::max(tmin.x, glm::max(tmin.y, tmin.z));
-    float t_exit = glm::min(tmax.x, glm::min(tmax.y, tmax.z));
+    // float t_enter = glm::max(tmin.x, glm::max(tmin.y, tmin.z));
+    // float t_exit = glm::min(tmax.x, glm::min(tmax.y, tmax.z));
+    float t_enter = glm::compMax(tmin);
+    float t_exit = glm::compMin(tmax);
 
     return t_exit >= t_enter && t_exit >= 0.0f;
 }

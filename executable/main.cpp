@@ -38,7 +38,7 @@ int main()
     RenderConfig conf;
     conf.camera = camera;
     conf.scene = scene;
-    TestRenderWork renderwork(conf);
+    NormalRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
     #ifdef _WIN32
