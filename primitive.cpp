@@ -9,7 +9,7 @@ const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm
 
 const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
 {
-    throw;
+    return _bbox;
 }
 
 rendertoy::UVSphere::UVSphere(const glm::vec3 &origin, const float &radius)

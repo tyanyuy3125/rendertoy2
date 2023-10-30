@@ -48,6 +48,7 @@ namespace rendertoy
     private:
         glm::vec3 _origin;
         BVH<Triangle> triangles;
+        BBox _bbox;
     public:
         TriangleMesh() = default;
         TriangleMesh(const TriangleMesh &) = delete;

@@ -13,7 +13,7 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
     std::vector<std::unique_ptr<TriangleMesh>> ret;
 
     Assimp::Importer importer;
-    const auto scene = importer.ReadFile(path, aiProcess_Triangulate);
+    const auto scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenBoundingBoxes);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -37,6 +37,8 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
             aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y)));
         }
         INFO << "Mesh " << i << " has " << mesh->mNumFaces << " faces. Now constructing BVH." << std::endl;
+        auto aabb = mesh->mAABB;
+        tmp->_bbox = BBox(glm::vec3(aabb.mMin.x, aabb.mMin.y, aabb.mMin.z), glm::vec3(aabb.mMax.x, aabb.mMax.y, aabb.mMax.z));
         tmp->triangles.Construct();
         ret.push_back(std::move(tmp));
     }
