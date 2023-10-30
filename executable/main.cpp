@@ -33,7 +33,7 @@ int main()
     RenderConfig conf;
     conf.camera = camera;
     conf.scene = scene;
-    NormalRenderWork renderwork(conf);
+    DepthBufferRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
     result.Export("/Users/tyanyuy3125/Pictures/test.png");

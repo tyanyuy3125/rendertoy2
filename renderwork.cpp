@@ -17,7 +17,11 @@ void rendertoy::TestRenderWork::Render()
         glm::float32 b = 1.0f - r - g;
         return glm::vec4{r, g, b, 1.0f};
     };
+    auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
 }
 
 rendertoy::TestRenderWork::TestRenderWork(RenderConfig render_config)
@@ -36,11 +40,12 @@ const rendertoy::Image rendertoy::IRenderWork::GetResult(const bool print_verbos
         return _output;
     Image text = GenerateTextImage({std::string("RenderToy2 Build ") + std::to_string(BUILD_NUMBER) + std::string("+") + std::string(BUILD_DATE),
                                     std::string("Film: ") + std::to_string(_render_config.width) + std::string("x") + std::to_string(_render_config.height),
-                                    std::string("RenderWork Type: ") + this->GetClassName()},
+                                    std::string("RenderWork Type: ") + this->GetClassName(),
+                                    std::string("Time elapsed: ") + std::to_string(_stat.time_elapsed) + std::string("s")},
                                    glm::vec4(1.0f), 2);
     Canvas canvas(_render_config.width, _render_config.height);
     canvas.layers().push_back(Layer(std::make_shared<Image>(_output), {0, 0}));
-    canvas.layers().push_back(Layer(std::make_shared<Image>(text), {0, 0}, MixMode::NORMAL_CLAMP));
+    canvas.layers().push_back(Layer(std::make_shared<Image>(text), {0, 0}, MixMode::INVERT));
     Image ret = canvas.ToImage();
     return ret;
 }
@@ -61,7 +66,11 @@ void rendertoy::DepthBufferRenderWork::Render()
         }
         return glm::vec4(1.0f);
     };
+    auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
 }
 
 rendertoy::DepthBufferRenderWork::DepthBufferRenderWork(RenderConfig render_config)
@@ -85,7 +94,11 @@ void rendertoy::NormalRenderWork::Render()
         }
         return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
+    auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
 }
 
 rendertoy::NormalRenderWork::NormalRenderWork(RenderConfig render_config)

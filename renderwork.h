@@ -23,12 +23,18 @@ namespace rendertoy
         glm::float32 far = 100.0f;
     };
 
+    struct RenderStat
+    {
+        double time_elapsed;
+    };
+
     class IRenderWork
     {
         CLASS_METADATA_MARK(IRenderWork)
     protected:
         RenderConfig _render_config;
         Image _output;
+        RenderStat _stat;
 
     public:
         IRenderWork() = delete;

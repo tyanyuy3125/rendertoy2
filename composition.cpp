@@ -4,6 +4,8 @@
 #include <OpenImageIO/imageio.h>
 #include <algorithm>
 
+#include "logger.h"
+
 const glm::vec4 &rendertoy::Image::operator()(const int x, const int y) const
 {
     if (x < 0 || x >= _width || y < 0 || y >= _height)
@@ -78,7 +80,7 @@ rendertoy::Canvas::Canvas(int width, int height)
 const rendertoy::Image rendertoy::Canvas::ToImage() const
 {
     Image ret(_width, _height, glm::vec4(0.0f));
-    for (const auto &layer : _layers)
+    for (const rendertoy::Layer &layer : _layers)
     {
         for (int x = std::max(layer._position.x, 0); x < std::min(_width, layer._position.x + layer._image->width()); ++x)
         {
@@ -93,8 +95,15 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
                 case MixMode::DIFFERENCE:
                     ret(x, y) = glm::abs(ret(x, y) - layer._image->operator()(x - layer._position.x, y - layer._position.y));
                     break;
+                case MixMode::DIFFERENCE_CLAMP:
+                    ret(x, y) = glm::clamp(glm::abs(ret(x, y) - layer._image->operator()(x - layer._position.x, y - layer._position.y)), glm::vec4(0.0f), glm::vec4(1.0f));
+                    break;
                 case MixMode::MAX:
                     ret(x, y) = glm::max(ret(x, y), layer._image->operator()(x - layer._position.x, y - layer._position.y));
+                    break;
+                case MixMode::INVERT:
+                    CRIT <<x - layer._position.x << ',' << y - layer._position.y << std::endl;
+                    ret(x, y) *= -layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     break;
                 case MixMode::NORMAL_CLAMP:
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);

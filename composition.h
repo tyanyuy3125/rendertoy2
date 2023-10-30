@@ -44,6 +44,8 @@ namespace rendertoy
         DIFFERENCE,
         MAX,
         NORMAL_CLAMP,
+        DIFFERENCE_CLAMP,
+        INVERT
     };
 
     struct Layer
