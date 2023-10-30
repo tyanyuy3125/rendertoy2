@@ -63,10 +63,10 @@ void rendertoy::Image::PixelShade(const PixelShader &shader)
 
 const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const
 {
-    Image ret(_width * factor, _height * factor);
+    Image ret(static_cast<int>(_width * factor), static_cast<int>(_height * factor));
     PixelShader pixel_shader = [&](const int width, const int height) -> glm::vec4
     {
-        return (*this)(width / factor, height / factor);
+        return (*this)(static_cast<int>(width / factor), static_cast<int>(height / factor));
     };
     ret.PixelShade(pixel_shader);
     return ret;
@@ -88,26 +88,31 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
             {
                 switch (layer._mix_mode)
                 {
-                default:
                 case MixMode::NORMAL:
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     break;
-                case MixMode::DIFFERENCE:
+                case MixMode::DIFF:
                     ret(x, y) = glm::abs(ret(x, y) - layer._image->operator()(x - layer._position.x, y - layer._position.y));
                     break;
-                case MixMode::DIFFERENCE_CLAMP:
+                case MixMode::DIFF_CLAMP:
                     ret(x, y) = glm::clamp(glm::abs(ret(x, y) - layer._image->operator()(x - layer._position.x, y - layer._position.y)), glm::vec4(0.0f), glm::vec4(1.0f));
                     break;
                 case MixMode::MAX:
                     ret(x, y) = glm::max(ret(x, y), layer._image->operator()(x - layer._position.x, y - layer._position.y));
                     break;
                 case MixMode::INVERT:
-                    CRIT <<x - layer._position.x << ',' << y - layer._position.y << std::endl;
-                    ret(x, y) *= -layer._image->operator()(x - layer._position.x, y - layer._position.y);
+                    auto color = layer._image->operator()(x - layer._position.x, y - layer._position.y);
+                    if(color[3] != 0.0f)
+                    {
+                        ret(x, y) *= glm::vec4(-glm::vec3(1.0f), 1.0f);
+                        ret(x, y) += glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+                    }
                     break;
                 case MixMode::NORMAL_CLAMP:
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     ret(x, y) = glm::clamp(ret(x, y), glm::vec4(0.0f), glm::vec4(1.0f));
+                    break;
+                default:
                     break;
                 }
             }

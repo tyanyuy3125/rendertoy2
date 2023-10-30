@@ -58,7 +58,7 @@ namespace rendertoy
             if (begin + 1 == end)
             {
                 node_tree[std::distance(objects.begin(), begin)]._bbox = (*begin) -> GetBoundingBox();
-                return std::distance(objects.begin(), begin);
+                return static_cast<int>(std::distance(objects.begin(), begin));
             }
 
             BBox overall_bbox = (*begin)->GetBoundingBox();
@@ -75,7 +75,7 @@ namespace rendertoy
             int right_node = RecursiveConstruct(mid, end);
             node_tree.push_back(BVHNode{overall_bbox, left_node, right_node});
 
-            return node_tree.size() - 1;
+            return static_cast<int>(node_tree.size()) - 1;
         }
 
     public:
@@ -94,7 +94,7 @@ namespace rendertoy
             int closest_index = -1;
 
             std::stack<int> traverse_stack;
-            traverse_stack.push(node_tree.size() - 1);
+            traverse_stack.push(static_cast<int>(node_tree.size()) - 1);
             while(!traverse_stack.empty())
             {
                 auto stack_top = traverse_stack.top();

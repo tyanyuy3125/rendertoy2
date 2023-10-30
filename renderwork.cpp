@@ -5,6 +5,7 @@
 #include "composition.h"
 
 #include <glm/glm.hpp>
+#include <chrono>
 
 void rendertoy::TestRenderWork::Render()
 {
@@ -62,7 +63,7 @@ void rendertoy::DepthBufferRenderWork::Render()
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
         if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            return glm::vec4((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near));
+            return glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
         }
         return glm::vec4(1.0f);
     };

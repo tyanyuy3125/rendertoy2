@@ -41,10 +41,10 @@ namespace rendertoy
     enum class MixMode
     {
         NORMAL = 0,
-        DIFFERENCE,
+        DIFF,
         MAX,
         NORMAL_CLAMP,
-        DIFFERENCE_CLAMP,
+        DIFF_CLAMP,
         INVERT
     };
 

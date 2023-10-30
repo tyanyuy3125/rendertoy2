@@ -15,13 +15,18 @@ int main()
 
     // Image result = test_renderer.GetResult();
     // result.Export("/Users/tyanyuy3125/Pictures/test.png");
+    #ifdef _WIN32
+    #else
     auto ret = ImportMeshFromFile("/Users/tyanyuy3125/cube.obj");
+    #endif // _WIN32
     INFO <<"Import done"<<std::endl;
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(0.0f), 1.0f));
     scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(10.0f, 0.0f, 0.0f), 2.0f));
     scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-5.0f, 0.0f, 0.0f), 1.0f));
+    scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-5.0f, -5.0f, 0.0f), 1.0f));
+    scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
     scene->Init();
     INFO << "Scene inited" << std::endl;
 
@@ -33,16 +38,16 @@ int main()
     RenderConfig conf;
     conf.camera = camera;
     conf.scene = scene;
-    DepthBufferRenderWork renderwork(conf);
+    TestRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
+    #ifdef _WIN32
+    result.Export("E:/test.png");
+    #else
     result.Export("/Users/tyanyuy3125/Pictures/test.png");
+    #endif // _WIN32
 
-    BBox test_box({-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f});
-    camera->SpawnRay({0.5f, 0.5f}, origin, direction);
-    INFO << origin << direction << std::endl;
-    INFO << test_box.Intersect(origin, direction) << std::endl;
-    INFO << scene->objects()[1]->Intersect(origin, direction, RENDERTOY_DISCARD_VARIABLE<IntersectInfo>) << std::endl;
+
 
     return 0;
 }

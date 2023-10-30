@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <ctime>
 
 #include <glm/glm.hpp>
 
@@ -66,7 +67,7 @@ namespace rendertoy
             return *this;
         }
 
-        Logger &operator<<(std::__1::ostream &(*__pf)(std::__1::ostream &))
+        Logger &operator<<(std::ostream &(*__pf)(std::ostream &))
         {
             std::cout << __pf;
             return *this;
@@ -81,9 +82,16 @@ namespace rendertoy
 
         static void printTimestamp()
         {
+#ifdef _WIN32
+            std::time_t now = std::time(nullptr);
+            struct tm localTime;
+            ::localtime_s(&localTime, &now);
+            std::cout << std::put_time(&localTime, "%Y-%m-%d %X") << " ";
+#else
             auto now = std::chrono::system_clock::now();
             std::time_t now_c = std::chrono::system_clock::to_time_t(now);
             std::cout << std::put_time(std::localtime(&now_c), "%Y-%m-%d %X") << " ";
+#endif
         }
 
         std::mutex mutex_;

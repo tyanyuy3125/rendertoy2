@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <assimp/vector3.h>
+#include <string>
 
 #include "rendertoy_internal.h"
 #include "accelerate.h"

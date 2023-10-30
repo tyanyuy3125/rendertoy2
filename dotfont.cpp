@@ -14,7 +14,7 @@ const rendertoy::Image rendertoy::GenerateTextImage(const std::vector<std::strin
     }
 
     int image_width = max_text_len * (char_width + 1);
-    int image_height = (char_height + 1) * textlines.size();
+    int image_height = (char_height + 1) * static_cast<int>(textlines.size());
 
     Image ret(image_width, image_height);
 
@@ -44,7 +44,7 @@ const rendertoy::Image rendertoy::GenerateTextImage(const std::vector<std::strin
     }
 
     if (font_size > 1)
-        return ret.UpScale(font_size);
+        return ret.UpScale(static_cast<glm::float32>(font_size));
 
     return ret;
 }
