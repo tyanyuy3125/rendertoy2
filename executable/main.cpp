@@ -35,21 +35,14 @@ int main()
     conf.scene = scene;
     NormalRenderWork renderwork(conf);
     renderwork.Render();
-    Image result = renderwork.GetResult();
-    // result.Export("/Users/tyanyuy3125/Pictures/test.png");
+    Image result = renderwork.GetResult(true);
+    result.Export("/Users/tyanyuy3125/Pictures/test.png");
 
     BBox test_box({-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f});
     camera->SpawnRay({0.5f, 0.5f}, origin, direction);
     INFO << origin << direction << std::endl;
     INFO << test_box.Intersect(origin, direction) << std::endl;
     INFO << scene->objects()[1]->Intersect(origin, direction, RENDERTOY_DISCARD_VARIABLE<IntersectInfo>) << std::endl;
-
-    Image text_image = GenerateTextImage("Hello from RenderToy 2!", glm::vec4(1.0f));
-    Canvas canvas(1920, 1080);
-    canvas.layers().push_back(Layer(std::make_shared<Image>(result), {0,0}));
-    canvas.layers().push_back(Layer(std::make_shared<Image>(text_image), {0,0}, MixMode::DIFFERENCE));
-    Image final_result = canvas.ToImage();
-    final_result.Export("/Users/tyanyuy3125/Pictures/test.png");
 
     return 0;
 }

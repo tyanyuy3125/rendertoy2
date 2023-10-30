@@ -1,4 +1,8 @@
+#include <memory>
+
 #include "renderwork.h"
+#include "dotfont.h"
+#include "composition.h"
 
 #include <glm/glm.hpp>
 
@@ -26,9 +30,19 @@ rendertoy::IRenderWork::IRenderWork(RenderConfig render_config)
 {
 }
 
-const rendertoy::Image &rendertoy::IRenderWork::GetResult() const
+const rendertoy::Image rendertoy::IRenderWork::GetResult(const bool print_verbose) const
 {
-    return _output;
+    if (!print_verbose)
+        return _output;
+    Image text = GenerateTextImage({std::string("RenderToy2 Build ") + std::to_string(BUILD_NUMBER) + std::string("+") + std::string(BUILD_DATE),
+                                    std::string("Film: ") + std::to_string(_render_config.width) + std::string("x") + std::to_string(_render_config.height),
+                                    std::string("RenderWork Type: ") + this->GetClassName()},
+                                   glm::vec4(1.0f), 2);
+    Canvas canvas(_render_config.width, _render_config.height);
+    canvas.layers().push_back(Layer(std::make_shared<Image>(_output), {0, 0}));
+    canvas.layers().push_back(Layer(std::make_shared<Image>(text), {0, 0}, MixMode::NORMAL_CLAMP));
+    Image ret = canvas.ToImage();
+    return ret;
 }
 
 void rendertoy::DepthBufferRenderWork::Render()

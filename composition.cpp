@@ -37,10 +37,11 @@ rendertoy::Image::Image(const int width, const int height, const glm::vec4 &fill
     _buffer.resize(width * height, fill);
 }
 
-void rendertoy::Image::Export(const std::string &filename) const
+void rendertoy::Image::Export(const std::string &filename, const ColorSpace color_space) const
 {
     std::unique_ptr<OIIO::ImageOutput> out = OIIO::ImageOutput::create(filename);
     OIIO::ImageSpec spec(_width, _height, 4, OIIO::TypeDesc::FLOAT);
+    spec.attribute("oiio:ColorSpace", oiio_color_space_string[static_cast<int>(color_space)]);
     out->open(filename, spec);
     glm::float32 *buffer_as_float = (float *)(_buffer.data());
     out->write_image(OIIO::TypeDesc::FLOAT, buffer_as_float);
@@ -56,6 +57,17 @@ void rendertoy::Image::PixelShade(const PixelShader &shader)
             (*this)(x, y) = shader(x, y);
         }
     }
+}
+
+const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const
+{
+    Image ret(_width * factor, _height * factor);
+    PixelShader pixel_shader = [&](const int width, const int height) -> glm::vec4
+    {
+        return (*this)(width / factor, height / factor);
+    };
+    ret.PixelShade(pixel_shader);
+    return ret;
 }
 
 rendertoy::Canvas::Canvas(int width, int height)
@@ -74,11 +86,19 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
             {
                 switch (layer._mix_mode)
                 {
-                default: case MixMode::NORMAL:
+                default:
+                case MixMode::NORMAL:
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     break;
                 case MixMode::DIFFERENCE:
                     ret(x, y) = glm::abs(ret(x, y) - layer._image->operator()(x - layer._position.x, y - layer._position.y));
+                    break;
+                case MixMode::MAX:
+                    ret(x, y) = glm::max(ret(x, y), layer._image->operator()(x - layer._position.x, y - layer._position.y));
+                    break;
+                case MixMode::NORMAL_CLAMP:
+                    ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
+                    ret(x, y) = glm::clamp(ret(x, y), glm::vec4(0.0f), glm::vec4(1.0f));
                     break;
                 }
             }

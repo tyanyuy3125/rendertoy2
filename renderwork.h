@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 
 #include "rendertoy_internal.h"
@@ -23,19 +25,22 @@ namespace rendertoy
 
     class IRenderWork
     {
+        CLASS_METADATA_MARK(IRenderWork)
     protected:
         RenderConfig _render_config;
         Image _output;
+
     public:
         IRenderWork() = delete;
         IRenderWork(RenderConfig render_config);
         virtual void Render() = 0;
-        
-        const Image &GetResult() const;
+
+        const Image GetResult(const bool print_verbose = false) const;
     };
 
     class TestRenderWork : public IRenderWork
     {
+        CLASS_METADATA_MARK(TestRenderWork)
     public:
         virtual void Render();
         TestRenderWork() = delete;
@@ -44,6 +49,7 @@ namespace rendertoy
 
     class DepthBufferRenderWork : public IRenderWork
     {
+        CLASS_METADATA_MARK(DepthBufferRenderWork)
     public:
         virtual void Render();
         DepthBufferRenderWork() = delete;
@@ -52,6 +58,7 @@ namespace rendertoy
 
     class NormalRenderWork : public IRenderWork
     {
+        CLASS_METADATA_MARK(NormalRenderWork)
     public:
         virtual void Render();
         NormalRenderWork() = delete;

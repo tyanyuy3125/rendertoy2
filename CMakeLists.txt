@@ -9,12 +9,21 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 20)
 project(RenderToy2 VERSION 0.1.0 LANGUAGES C CXX)
 
+find_package(Python3 COMPONENTS Interpreter)
+add_custom_target(
+    update_build_number
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/update_build_number.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Updating Build Number"
+)
+
 include(CTest)
 enable_testing()
 
 add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               accelerate.h accelerate.cpp
                               intersectinfo.h
+                              dotfont.h dotfont.cpp
                               rendertoy_internal.h
                               scene.h scene.cpp
                               composition.h composition.cpp
@@ -24,7 +33,9 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               camera.h camera.cpp
                               texture.h texture.cpp
                               curve.h curve.cpp
-                              dotfont.h)
+                              color.h color.cpp)
+
+add_dependencies(RenderToy2 update_build_number)
 
 find_package(glm REQUIRED)
 target_link_libraries(RenderToy2 PUBLIC glm::glm)

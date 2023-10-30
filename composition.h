@@ -6,8 +6,11 @@
 #include <functional>
 #include <memory>
 
+#include "color.h"
+
 namespace rendertoy
 {
+
     typedef std::function<glm::vec4(const int, const int)> PixelShader;
 
     class Image
@@ -28,15 +31,19 @@ namespace rendertoy
         Image() = delete;
         Image(const int width, const int height, const glm::vec4 &fill = glm::vec4(0.0f));
 
-        void Export(const std::string &filename) const;
+        void Export(const std::string &filename, const ColorSpace color_space = ColorSpace::LINEAR) const;
 
         void PixelShade(const PixelShader &shader);
+
+        const Image UpScale(const glm::float32 factor) const;
     };
 
     enum class MixMode
     {
         NORMAL = 0,
         DIFFERENCE,
+        MAX,
+        NORMAL_CLAMP,
     };
 
     struct Layer
