@@ -67,7 +67,7 @@ namespace rendertoy
                 overall_bbox.Union((*it)->GetBoundingBox());
             }
             int longest_axis = overall_bbox.GetLongestAxis();
-            std::sort(objects.begin(), objects.end(), [&](const std::unique_ptr<AccelerableObject> &a, const std::unique_ptr<AccelerableObject> &b) -> bool
+            std::sort(begin, end, [&](const std::unique_ptr<AccelerableObject> &a, const std::unique_ptr<AccelerableObject> &b) -> bool
                       { return a->GetBoundingBox().GetCenter()[longest_axis] < b->GetBoundingBox().GetCenter()[longest_axis]; });
 
             auto mid = std::next(begin, std::distance(begin, end) / 2);
@@ -92,7 +92,7 @@ namespace rendertoy
         {
             IntersectInfo temp_intersect_info;
             int closest_index = -1;
-#define DISABLE_BVH
+// #define DISABLE_BVH
 #ifdef DISABLE_BVH // For debug purposes.
             for (int i = 0; i < objects.size(); ++i)
             {
@@ -105,7 +105,7 @@ namespace rendertoy
                     }
                 }
             }
-#elif
+#else
             std::stack<int> traverse_stack;
             traverse_stack.push(static_cast<int>(node_tree.size()) - 1);
             while (!traverse_stack.empty())

@@ -37,10 +37,10 @@ int main()
     mat->albedo() = tex;
     scene->objects()[0]->mat() = mat;
 
-    std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 10.0f), glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f))), glm::radians(90.0f), 16.0f / 9.0f);
+    std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 10.0f), glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f))), glm::radians(60.0f), 16.0f / 9.0f);
     glm::vec3 origin, direction;
     camera->SpawnRay({1.0f, 1.0f}, origin, direction);
-    camera->LookAt({5.0f, 5.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+    camera->LookAt({2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
     INFO << origin << direction << std::endl;
 
     RenderConfig conf;

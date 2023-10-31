@@ -56,13 +56,13 @@ namespace rendertoy
                 float tx = u * (_image.width() - 1.0f) - x0;
                 float ty = v * (_image.height() - 1.0f) - y0;
 
-                glm::vec3 c00 = _image(x0, y0);
-                glm::vec3 c01 = _image(x0, y1);
-                glm::vec3 c10 = _image(x1, y0);
-                glm::vec3 c11 = _image(x1, y1);
+                glm::vec4 c00 = _image(x0, y0);
+                glm::vec4 c01 = _image(x0, y1);
+                glm::vec4 c10 = _image(x1, y0);
+                glm::vec4 c11 = _image(x1, y1);
 
-                glm::vec3 color = (1.0f - tx) * (1.0f - ty) * c00 + tx * (1.0f - ty) * c10 + (1.0f - tx) * ty * c01 + tx * ty * c11;
-                return glm::vec4(color, 1.0f);
+                glm::vec4 color = (1.0f - tx) * (1.0f - ty) * c00 + tx * (1.0f - ty) * c10 + (1.0f - tx) * ty * c01 + tx * ty * c11;
+                return glm::vec4(color);
                 break;
             }
             }
