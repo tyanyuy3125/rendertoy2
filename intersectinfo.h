@@ -11,10 +11,13 @@ namespace rendertoy
 
     struct IntersectInfo
     {
+        glm::vec3 _in;
         glm::vec2 _uv;
         glm::vec3 _coord;
         glm::float32 _t;
         glm::vec3 _normal;
         std::shared_ptr<IMaterial> _mat;
+
+        const glm::mat3 GenerateSurfaceCoordinates() const;
     };
 }

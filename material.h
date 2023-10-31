@@ -29,6 +29,7 @@ namespace rendertoy
     public:
         IMaterial(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
         : _albedo(albedo) {}
+        virtual const glm::vec3 EvalEmissive(const IntersectInfo &) const = 0;
         virtual const glm::vec3 Eval(const IntersectInfo &) const = 0;
         virtual const glm::vec3 Sample(const IntersectInfo &) const = 0;
     };
@@ -38,7 +39,7 @@ namespace rendertoy
     public:
         DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
         : IMaterial(albedo) {}
-
+        virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info) const;
     };
@@ -47,9 +48,9 @@ namespace rendertoy
     {
         MATERIAL_SOCKET(strength, Numerical);
     public:
-        Emissive(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
-        : IMaterial(albedo) {}
-
+        Emissive(const std::shared_ptr<ISamplableColor> &albedo = default_albedo, const std::shared_ptr<ISamplableNumerical> &strength = default_strength)
+        : IMaterial(albedo), _strength(strength) {}
+        virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info) const;
     };

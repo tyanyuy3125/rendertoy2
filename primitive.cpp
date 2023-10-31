@@ -91,6 +91,7 @@ const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::ve
     // intersect_info._normal = glm::normalize(glm::cross(v0v1, v0v2));
     intersect_info._normal = u * _norm[1] + v * _norm[2] + (1 - u - v) * _norm[0];
     intersect_info._mat = _mat;
+    intersect_info._in = -direction;
     if (glm::dot(intersect_info._normal, direction) > 0.0f)
     {
         intersect_info._normal = -intersect_info._normal;

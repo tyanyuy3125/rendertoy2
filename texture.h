@@ -45,7 +45,7 @@ namespace rendertoy
 
         virtual const float Sample(const float u, const float v) const
         {
-            return 0.0f;
+            return _value;
         }
     };
 

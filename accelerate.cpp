@@ -24,9 +24,13 @@ const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &
     {
         if(t_enter < 0)
         {
-            return t_exit;
+            t = t_exit;
         }
-        return t_enter;
+        else
+        {
+            t = t_enter;
+        }
+        return true;
     }
     else
     {

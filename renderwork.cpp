@@ -120,7 +120,7 @@ rendertoy::NormalRenderWork::NormalRenderWork(RenderConfig render_config)
 {
 }
 
-static glm::vec2 GetUVFromSkySphere(const glm::vec3 &normal)
+static glm::vec2 GetUVOnSkySphere(const glm::vec3 &normal)
 {
     // 将法向量转换为球坐标系
     float theta = std::acos(normal.y);          // theta表示纬度
@@ -149,7 +149,7 @@ void rendertoy::AlbedoRenderWork::Render()
                 return intersect_info._mat->albedo()->Sample(intersect_info._uv);
             }
         }
-        return _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
+        return _render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction));
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);
@@ -165,21 +165,41 @@ rendertoy::AlbedoRenderWork::AlbedoRenderWork(RenderConfig render_config)
 
 void rendertoy::PathTracingRenderWork::Render()
 {
+    // 0: [1 * emissive0] + reflectance0 * RADIANCE
+    // 1: emissive0 + reflectance0 * (emissive1 + reflectance1 * RADIANCE)
+    //   =[1 * emissive0 + reflectance0 * emissive1] + reflectance0 * reflectance1 * RADIANCE
+    // 2: emissive0 + reflectance0 * (emissive1 + reflectance1 * (emissive2 + reflectance2 * RADIANCE))
+    //   =[1 * emissive0 + reflectance0 * emissive1 + reflectance0 * reflectance1 * emissive2] + reflectance0 * reflectance1 * reflectance2 * RADIANCE
     int width = _output.width();
     int height = _output.height();
     PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
     {
-        glm::vec3 origin, direction;
-        IntersectInfo intersect_info;
-        _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        glm::vec3 ret = glm::vec3(0.0f);
+        for(int i=0;i<4;++i)
         {
-            if (intersect_info._mat != nullptr)
+            glm::vec3 factor = glm::vec3(1.0f);
+            glm::vec3 ret_per_iter = glm::vec3(0.0f);
+            glm::vec3 origin, direction;
+            IntersectInfo intersect_info;
+            _render_config.camera->SpawnRay(screen_coord, origin, direction);
+            for(int j=0;j<16;++j)
             {
-                return intersect_info._mat->albedo()->Sample(intersect_info._uv);
+                if (_render_config.scene->Intersect(origin, direction, intersect_info))
+                {
+                    ret_per_iter += factor * intersect_info._mat->EvalEmissive(intersect_info);
+                    factor *= intersect_info._mat->Eval(intersect_info);
+                    origin = intersect_info._coord;
+                    direction = intersect_info.GenerateSurfaceCoordinates() * intersect_info._mat->Sample(intersect_info);
+                }
+                else
+                {
+                    ret_per_iter += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
+                    break;
+                }
             }
+            ret += ret_per_iter / 4.0f;
         }
-        return _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
+        return glm::vec4(ret, 1.0f);
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);

@@ -13,8 +13,8 @@ const glm::vec3 rendertoy::UniformSampleHemisphere()
     float sinTheta = std::sqrt(1.0f - u2 * u2);
 
     float x = sinTheta * std::cos(phi);
-    float y = sinTheta * std::sin(phi);
-    float z = cosTheta;
+    float y = cosTheta;
+    float z = sinTheta * std::sin(phi);
 
     return glm::vec3(x, y, z);
 }

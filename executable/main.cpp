@@ -36,27 +36,34 @@ int main()
     std::shared_ptr<ISamplableColor> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    std::shared_ptr<ISamplableNumerical> emissive_strength = std::make_shared<ConstantNumerical>(10.0f);
     std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>();
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
+    std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
     scene->objects()[0]->mat() = mat_red;
     scene->objects()[1]->mat() = mat_white;
     scene->objects()[2]->mat() = mat_white;
     scene->objects()[3]->mat() = mat_white;
     scene->objects()[4]->mat() = mat_green;
-    scene->objects()[5]->mat() = mat_white;
+    scene->objects()[5]->mat() = mat_emissive;
 
     // std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
     std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
+    // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{0.0f, 1.0f, 4.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(45.0f), 16.0f / 9.0f);
 
     RenderConfig conf;
+    conf.width = 1280;
+    conf.height = 720;
     conf.camera = camera;
     conf.scene = scene;
-    AlbedoRenderWork renderwork(conf);
+    conf.x_sample = 4;
+    conf.y_sample = 4;
+    PathTracingRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
     #ifdef _WIN32

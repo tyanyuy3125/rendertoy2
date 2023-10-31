@@ -22,7 +22,7 @@ enable_testing()
 
 add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               accelerate.h accelerate.cpp
-                              intersectinfo.h
+                              intersectinfo.h intersectinfo.cpp
                               dotfont.h dotfont.cpp
                               rendertoy_internal.h
                               scene.h scene.cpp
