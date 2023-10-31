@@ -13,6 +13,7 @@ namespace rendertoy
         BILINEAR,
     };
 
+    template <typename T = glm::vec4>
     class ISamplable
     {
     protected:
@@ -24,14 +25,31 @@ namespace rendertoy
             _sample_method = sample_method;
         }
 
-        virtual const glm::vec4 Sample(const float u, const float v) const = 0;
-        const glm::vec4 Sample(const glm::vec2 &uv) const
+        virtual const T Sample(const float u, const float v) const = 0;
+        const T Sample(const glm::vec2 &uv) const
         {
             return Sample(uv.x, uv.y);
         }
     };
 
-    class ImageTexture : public ISamplable
+    typedef ISamplable<glm::vec4> ISamplableColor;
+    typedef ISamplable<float> ISamplableNumerical;
+
+    class ConstantNumerical : public ISamplable<float>
+    {
+    private:
+        float _value;
+
+    public:
+        ConstantNumerical(const float value) : _value(value) {}
+
+        virtual const float Sample(const float u, const float v) const
+        {
+            return 0.0f;
+        }
+    };
+
+    class ImageTexture : public ISamplable<glm::vec4>
     {
     public: // TODO: Temporal
         Image _image;
@@ -74,7 +92,7 @@ namespace rendertoy
         }
     };
 
-    class ColorTexture : public ISamplable
+    class ColorTexture : public ISamplable<glm::vec4>
     {
     private:
         glm::vec4 _color;

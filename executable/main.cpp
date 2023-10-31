@@ -33,9 +33,9 @@ int main()
     scene->Init();
     INFO << "Scene inited." << std::endl;
 
-    std::shared_ptr<ISamplable> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
-    std::shared_ptr<ISamplable> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    std::shared_ptr<ISamplable> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    std::shared_ptr<ISamplableColor> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
+    std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>();
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
@@ -47,7 +47,7 @@ int main()
     scene->objects()[5]->mat() = mat_white;
 
     // std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
-    std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
+    std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
     hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
 
