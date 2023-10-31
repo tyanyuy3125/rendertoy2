@@ -16,9 +16,14 @@ namespace rendertoy
     class ISamplable
     {
     protected:
-        SampleMethod sample_method;
+        SampleMethod _sample_method = SampleMethod::NEAREST_NEIGHBOUR;
 
     public:
+        void SetSampleMethod(const SampleMethod sample_method)
+        {
+            _sample_method = sample_method;
+        }
+
         virtual const glm::vec4 Sample(const float u, const float v) const = 0;
         const glm::vec4 Sample(const glm::vec2 &uv) const
         {
@@ -39,11 +44,11 @@ namespace rendertoy
         virtual const glm::vec4 Sample(const float u, float v) const
         {
             v = 1.0f - v;
-            switch (sample_method)
+            switch (_sample_method)
             {
             case SampleMethod::NEAREST_NEIGHBOUR:
             {
-                return _image(static_cast<int>(u * _image.width()), static_cast<int>(v * _image.height()));
+                return _image(static_cast<int>(u * (_image.width() - 1)), static_cast<int>(v * (_image.height()-1)));
                 break;
             }
             case SampleMethod::BILINEAR:

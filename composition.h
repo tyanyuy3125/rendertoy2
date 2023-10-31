@@ -30,7 +30,7 @@ namespace rendertoy
         Image() = delete;
         Image(const int width, const int height, const glm::vec4 &fill = glm::vec4(0.0f));
 
-        void Export(const std::string &filename, const ColorSpace color_space = ColorSpace::LINEAR) const;
+        void Export(const std::string &filename, const ColorSpace color_space = ColorSpace::SRGB) const;
 
         void PixelShade(const PixelShader &shader);
 

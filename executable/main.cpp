@@ -43,6 +43,18 @@ int main()
     camera->LookAt({2.0f, 2.0f, 2.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
     INFO << origin << direction << std::endl;
 
+    Image test_sample(1024, 1024);
+    tex->SetSampleMethod(SampleMethod::NEAREST_NEIGHBOUR);
+    PixelShader ps = [&](const int x, const int y) -> glm::vec4
+    {
+        float u = x / 1024.0f;
+        float v = y / 1024.0f;
+        auto tmp = tex->Sample(u, v); // TODO: Remove
+        return tmp;
+    };
+    test_sample.PixelShade(ps);
+    test_sample.Export("/Users/tyanyuy3125/Pictures/sample.png");
+
     RenderConfig conf;
     conf.camera = camera;
     conf.scene = scene;
