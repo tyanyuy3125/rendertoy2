@@ -83,4 +83,14 @@ namespace rendertoy
         AlbedoRenderWork() = delete;
         AlbedoRenderWork(RenderConfig render_config);
     };
+
+    class PathTracingRenderWork : public IRenderWork
+    {
+        CLASS_METADATA_MARK(PathTracingRenderWork)
+    public:
+        virtual void Render();
+        PathTracingRenderWork() = delete;
+        PathTracingRenderWork(const RenderConfig &render_config)
+        : IRenderWork(render_config) {}
+    };
 }

@@ -33,7 +33,7 @@ namespace rendertoy
 
     class ImageTexture : public ISamplable
     {
-    private:
+    public: // TODO: Temporal
         Image _image;
 
     public:

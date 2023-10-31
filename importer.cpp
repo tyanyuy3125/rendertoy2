@@ -73,7 +73,7 @@ const rendertoy::Image rendertoy::ImportImageFromFile(const std::string &path)
     else if (channels == 3)
     {
         std::vector<glm::vec3> temp_buffer(width * height);
-        in->read_image(0, 0, 0, channels, OIIO::TypeDesc::FLOAT, &temp_buffer[0]);
+        in->read_image(0, 0, 0, 3, OIIO::TypeDesc::FLOAT, &temp_buffer[0]);
         for(int i=0;i<width * height;++i)
         {
             ret._buffer[i] = glm::vec4(temp_buffer[i], 1.0f);

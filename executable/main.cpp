@@ -46,7 +46,9 @@ int main()
     scene->objects()[4]->mat() = mat_green;
     scene->objects()[5]->mat() = mat_white;
 
-    std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
+    // std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
+    std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
+    hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{0.0f, 1.0f, 4.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(45.0f), 16.0f / 9.0f);
@@ -62,6 +64,16 @@ int main()
     #else
     result.Export("/Users/tyanyuy3125/Pictures/test.png");
     #endif // _WIN32
+
+    // auto hdr_bg_raw_ptr = dynamic_cast<ImageTexture *>(hdr_bg.get());
+    // CRIT<<hdr_bg_raw_ptr->_image(313,217)<<std::endl;
+    // CRIT<<hdr_bg_raw_ptr->_image(50,50)<<std::endl;
+    // PixelShader ps5 = [&](const int x, const int y) -> glm::vec4
+    // {
+    //     return glm::vec4(glm::vec3(hdr_bg_raw_ptr->_image(x, y)) * 1e8f, 1.0f);
+    // };
+    // hdr_bg_raw_ptr->_image.PixelShade(ps5);
+    // hdr_bg_raw_ptr->_image.Export("/Users/tyanyuy3125/test2.exr");
 
     return 0;
 }

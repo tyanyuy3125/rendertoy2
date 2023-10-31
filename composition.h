@@ -11,6 +11,7 @@
 namespace rendertoy
 {
     typedef std::function<glm::vec4(const int, const int)> PixelShader;
+    typedef std::function<glm::vec4(const glm::vec2 &)> PixelShaderSSAA;
 
     class Image
     {
@@ -33,6 +34,7 @@ namespace rendertoy
         void Export(const std::string &filename, const ColorSpace color_space = ColorSpace::SRGB) const;
 
         void PixelShade(const PixelShader &shader);
+        void PixelShadeSSAA(const PixelShaderSSAA &shader, const int x_sample, const int y_sample);
 
         const Image UpScale(const glm::float32 factor) const;
 

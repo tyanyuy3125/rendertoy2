@@ -25,7 +25,8 @@ namespace rendertoy
 
         IMaterial(const std::shared_ptr<ISamplable> &albedo = default_albedo)
         : _albedo(albedo) {}
-        // virtual void Eval(float u, float v) const = 0;
+        virtual const glm::vec3 Eval(const IntersectInfo &) const = 0;
+        virtual const glm::vec3 Sample(const IntersectInfo &) const = 0;
     };
 
     class DiffuseBSDF : public IMaterial
@@ -33,6 +34,9 @@ namespace rendertoy
     public:
         DiffuseBSDF(const std::shared_ptr<ISamplable> &albedo = default_albedo)
         : IMaterial(albedo) {};
+
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
+        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info) const;
     };
 
 }

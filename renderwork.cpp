@@ -70,31 +70,19 @@ void rendertoy::DepthBufferRenderWork::Render()
 {
     int width = _output.width();
     int height = _output.height();
-    PixelShader shader = [&](const int x, const int y) -> glm::vec4
+    PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
     {
-        glm::vec4 contribution(0.0f);
-        for (int xx = 0; xx < _render_config.x_sample; ++xx)
+        glm::vec3 origin, direction;
+        IntersectInfo intersect_info;
+        _render_config.camera->SpawnRay(screen_coord, origin, direction);
+        if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            for (int yy = 0; yy < _render_config.y_sample; ++yy)
-            {
-                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
-                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
-                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
-                glm::vec3 origin, direction;
-                IntersectInfo intersect_info;
-                _render_config.camera->SpawnRay(screen_coord, origin, direction);
-                if (_render_config.scene->Intersect(origin, direction, intersect_info))
-                {
-                    contribution += glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
-                    continue;
-                }
-                contribution += glm::vec4(1.0f);
-            }
+            return glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
         }
-        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
+        return glm::vec4(1.0f);
     };
     auto start_time = std::chrono::high_resolution_clock::now();
-    _output.PixelShade(shader);
+    _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = end_time - start_time;
     _stat.time_elapsed = elapsed_time.count();
@@ -109,31 +97,19 @@ void rendertoy::NormalRenderWork::Render()
 {
     int width = _output.width();
     int height = _output.height();
-    PixelShader shader = [&](const int x, const int y) -> glm::vec4
+    PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
     {
-        glm::vec4 contribution(0.0f);
-        for (int xx = 0; xx < _render_config.x_sample; ++xx)
+        glm::vec3 origin, direction;
+        IntersectInfo intersect_info;
+        _render_config.camera->SpawnRay(screen_coord, origin, direction);
+        if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            for (int yy = 0; yy < _render_config.y_sample; ++yy)
-            {
-                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
-                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
-                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
-                glm::vec3 origin, direction;
-                IntersectInfo intersect_info;
-                _render_config.camera->SpawnRay(screen_coord, origin, direction);
-                if (_render_config.scene->Intersect(origin, direction, intersect_info))
-                {
-                    contribution += glm::vec4(intersect_info._normal, 1.0f);
-                    continue;
-                }
-                contribution += glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-            }
+            return glm::vec4(intersect_info._normal, 1.0f);
         }
-        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
+        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
     auto start_time = std::chrono::high_resolution_clock::now();
-    _output.PixelShade(shader);
+    _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = end_time - start_time;
     _stat.time_elapsed = elapsed_time.count();
@@ -144,9 +120,10 @@ rendertoy::NormalRenderWork::NormalRenderWork(RenderConfig render_config)
 {
 }
 
-static glm::vec2 GetUVFromSkySphere(const glm::vec3& normal) {
+static glm::vec2 GetUVFromSkySphere(const glm::vec3 &normal)
+{
     // 将法向量转换为球坐标系
-    float theta = std::acos(normal.y); // theta表示纬度
+    float theta = std::acos(normal.y);          // theta表示纬度
     float phi = std::atan2(normal.z, normal.x); // phi表示经度
 
     // 将球坐标系映射到UV坐标
@@ -160,34 +137,22 @@ void rendertoy::AlbedoRenderWork::Render()
 {
     int width = _output.width();
     int height = _output.height();
-    PixelShader shader = [&](const int x, const int y) -> glm::vec4
+    PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
     {
-        glm::vec4 contribution(0.0f);
-        for (int xx = 0; xx < _render_config.x_sample; ++xx)
+        glm::vec3 origin, direction;
+        IntersectInfo intersect_info;
+        _render_config.camera->SpawnRay(screen_coord, origin, direction);
+        if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            for (int yy = 0; yy < _render_config.y_sample; ++yy)
+            if (intersect_info._mat != nullptr)
             {
-                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
-                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
-                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
-                glm::vec3 origin, direction;
-                IntersectInfo intersect_info;
-                _render_config.camera->SpawnRay(screen_coord, origin, direction);
-                if (_render_config.scene->Intersect(origin, direction, intersect_info))
-                {
-                    if (intersect_info._mat != nullptr)
-                    {
-                        contribution += intersect_info._mat->albedo()->Sample(intersect_info._uv);
-                        continue;
-                    }
-                }
-                contribution += _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
+                return intersect_info._mat->albedo()->Sample(intersect_info._uv);
             }
         }
-        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
+        return _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
     };
     auto start_time = std::chrono::high_resolution_clock::now();
-    _output.PixelShade(shader);
+    _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = end_time - start_time;
     _stat.time_elapsed = elapsed_time.count();
@@ -196,4 +161,29 @@ void rendertoy::AlbedoRenderWork::Render()
 rendertoy::AlbedoRenderWork::AlbedoRenderWork(RenderConfig render_config)
     : IRenderWork(render_config)
 {
+}
+
+void rendertoy::PathTracingRenderWork::Render()
+{
+    int width = _output.width();
+    int height = _output.height();
+    PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
+    {
+        glm::vec3 origin, direction;
+        IntersectInfo intersect_info;
+        _render_config.camera->SpawnRay(screen_coord, origin, direction);
+        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        {
+            if (intersect_info._mat != nullptr)
+            {
+                return intersect_info._mat->albedo()->Sample(intersect_info._uv);
+            }
+        }
+        return _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
+    };
+    auto start_time = std::chrono::high_resolution_clock::now();
+    _output.PixelShadeSSAA(shader, _render_config.x_sample, _render_config.y_sample);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
 }

@@ -51,7 +51,7 @@ void rendertoy::Image::Export(const std::string &filename, const ColorSpace colo
     out->close();
 }
 
-void rendertoy::Image::PixelShade(const PixelShader &shader)
+void rendertoy::Image::PixelShade(const rendertoy::PixelShader &shader)
 {
 #ifdef DISABLE_PARALLEL
     for (int x = 0; x < _width; ++x)
@@ -71,7 +71,36 @@ void rendertoy::Image::PixelShade(const PixelShader &shader)
             }
         }
     });
-#endif
+#endif // DISABLE_PARALLEL
+}
+
+void rendertoy::Image::PixelShadeSSAA(const rendertoy::PixelShaderSSAA &shader, const int x_sample, const int y_sample)
+{
+#ifdef DISABLE_PARALLEL
+    CRIT << "Not implemented." << std::endl;
+    return;
+#else
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int>& r) {
+        for (int x = r.rows().begin(); x < r.rows().end(); ++x)
+        {
+            for (int y = r.cols().begin(); y < r.cols().end(); ++y)
+            {
+                glm::vec4 contribution(0.0f);
+                for (int xx = 0; xx < x_sample; ++xx)
+                {
+                    for (int yy = 0; yy < y_sample; ++yy)
+                    {
+                        glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(x_sample),
+                                            (static_cast<float>(yy) + 0.5f) / static_cast<float>(x_sample));
+                        glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(_width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(_height));
+                        contribution += shader(screen_coord);
+                    }
+                }
+                (*this)(x, y) = contribution * (1.0f / (static_cast<float>(x_sample) * static_cast<float>(y_sample)));
+            }
+        }
+    });
+#endif // DISABLE_PARALLEL
 }
 
 const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const
