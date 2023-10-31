@@ -7,6 +7,12 @@ rendertoy::Camera::Camera(const glm::vec3 &origin, const glm::mat3 &rotation, co
 {
 }
 
+rendertoy::Camera::Camera(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up, const glm::float32 fov, const glm::float32 aspect_ratio)
+    : _fov(fov), _aspect_ratio(aspect_ratio)
+{
+    this->LookAt(eye, center, up);
+}
+
 void rendertoy::Camera::SpawnRay(glm::vec2 coord, glm::vec3 RENDERTOY_FUNC_ARGUMENT_OUT origin, glm::vec3 RENDERTOY_FUNC_ARGUMENT_OUT direction) const
 {
     coord.y = 1.0f - coord.y;

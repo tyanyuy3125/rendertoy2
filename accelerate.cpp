@@ -5,7 +5,7 @@
 #include <optional>
 #include <glm/gtx/norm.hpp>
 
-const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction) const
+const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t) const
 {
     glm::vec3 inv_direction = 1.0f / direction;
 
@@ -20,7 +20,18 @@ const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &
     float t_enter = glm::compMax(tmin);
     float t_exit = glm::compMin(tmax);
 
-    return t_exit >= t_enter && t_exit >= 0.0f;
+    if(t_exit >= t_enter && t_exit >= 0.0f)
+    {
+        if(t_enter < 0)
+        {
+            return t_exit;
+        }
+        return t_enter;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 const glm::vec3 rendertoy::BBox::GetCenter() const

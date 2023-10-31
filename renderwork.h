@@ -21,6 +21,10 @@ namespace rendertoy
         // Depth buffer
         glm::float32 near = 0.1f;
         glm::float32 far = 100.0f;
+
+        // Antialiasing
+        uint32_t x_sample = 4;
+        uint32_t y_sample = 4;
     };
 
     struct RenderStat

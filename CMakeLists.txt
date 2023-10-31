@@ -48,6 +48,8 @@ if(WIN32)
 else()
     target_link_libraries(RenderToy2 PRIVATE assimp)
 endif()
+find_package(tbb REQUIRED)
+target_link_libraries(RenderToy2 PRIVATE tbb)
 # find_package(OpenImageDenoise REQUIRED)
 # target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
 

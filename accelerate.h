@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <stack>
+#include <limits>
 
 #include "rendertoy_internal.h"
 #include "intersectinfo.h"
@@ -21,7 +22,7 @@ namespace rendertoy
     public:
         BBox(glm::vec3 pmin, glm::vec3 pmax) : _pmin(pmin), _pmax(pmax) {}
         BBox() : BBox(glm::vec3{0.0f}, glm::vec3{0.0f}) {}
-        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction) const;
+        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t) const;
         const glm::vec3 GetCenter() const;
         void Union(const BBox &a);
         const int GetLongestAxis() const;
@@ -112,7 +113,10 @@ namespace rendertoy
             {
                 auto stack_top = traverse_stack.top();
                 traverse_stack.pop();
-                if (node_tree[stack_top]._bbox.Intersect(origin, direction))
+// #define DISABLE_BVH_DISTANCE_OPTIMIZATION
+#ifdef DISABLE_BVH_DISTANCE_OPTIMIZATION
+                float deprecated_dist;
+                if (node_tree[stack_top]._bbox.Intersect(origin, direction, deprecated_dist))
                 {
                     if (stack_top < objects.size())
                     {
@@ -137,8 +141,55 @@ namespace rendertoy
                         }
                     }
                 }
+#else
+                if (stack_top < objects.size())
+                {
+                    if (objects[stack_top]->Intersect(origin, direction, temp_intersect_info))
+                    {
+                        if (closest_index == -1 || temp_intersect_info._t < intersect_info._t)
+                        {
+                            intersect_info = temp_intersect_info;
+                            closest_index = stack_top;
+                        }
+                    }
+                }
+                else
+                {
+                    float dist_l = std::numeric_limits<float>::infinity(), dist_r = std::numeric_limits<float>::infinity();
+                    bool intersect_l = false, intersect_r = false;
+                    if(node_tree[stack_top].left != -1)
+                    {
+                        intersect_l = node_tree[node_tree[stack_top].left]._bbox.Intersect(origin, direction, dist_l);
+                    }
+                    if(node_tree[stack_top].right != -1)
+                    {
+                        intersect_r = node_tree[node_tree[stack_top].right]._bbox.Intersect(origin, direction, dist_r);
+                    }
+                    if(intersect_l && intersect_r)
+                    {
+                        if(dist_l < dist_r)
+                        {
+                            traverse_stack.push(node_tree[stack_top].right);
+                            traverse_stack.push(node_tree[stack_top].left); // So left is on the top.
+                        }
+                        else
+                        {
+                            traverse_stack.push(node_tree[stack_top].left);
+                            traverse_stack.push(node_tree[stack_top].right);
+                        }
+                    }
+                    else if(intersect_l && !intersect_r)
+                    {
+                        traverse_stack.push(node_tree[stack_top].left);
+                    }
+                    else if(!intersect_l && intersect_r)
+                    {
+                        traverse_stack.push(node_tree[stack_top].right);
+                    }
+                }
+#endif // DISABLE_BVH_DISTANCE_OPTIMIZATION
             }
-#endif
+#endif // DISABLE_BVH
             if (closest_index == -1)
             {
                 return false;

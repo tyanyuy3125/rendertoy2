@@ -3,6 +3,7 @@
 #include <memory>
 #include <OpenImageIO/imageio.h>
 #include <algorithm>
+#include <tbb/tbb.h>
 
 #include "logger.h"
 
@@ -52,6 +53,7 @@ void rendertoy::Image::Export(const std::string &filename, const ColorSpace colo
 
 void rendertoy::Image::PixelShade(const PixelShader &shader)
 {
+#ifdef DISABLE_PARALLEL
     for (int x = 0; x < _width; ++x)
     {
         for (int y = 0; y < _height; ++y)
@@ -59,6 +61,17 @@ void rendertoy::Image::PixelShade(const PixelShader &shader)
             (*this)(x, y) = shader(x, y);
         }
     }
+#else
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int>& r) {
+        for (int x = r.rows().begin(); x < r.rows().end(); ++x)
+        {
+            for (int y = r.cols().begin(); y < r.cols().end(); ++y)
+            {
+                (*this)(x, y) = shader(x, y);
+            }
+        }
+    });
+#endif
 }
 
 const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const

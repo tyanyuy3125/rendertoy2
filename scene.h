@@ -3,6 +3,7 @@
 #include "accelerate.h"
 #include "primitive.h"
 #include "accelerate.h"
+#include "texture.h"
 
 namespace rendertoy
 {
@@ -10,6 +11,8 @@ namespace rendertoy
     {
     private:
         BVH<Primitive> _objects;
+
+        std::shared_ptr<ISamplable> _hdr_background;
     public:
         Scene() = default;
         Scene(const Scene &) = delete;

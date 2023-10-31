@@ -43,7 +43,8 @@ const rendertoy::Image rendertoy::IRenderWork::GetResult(const bool print_verbos
     Image text = GenerateTextImage({std::string("RenderToy2 Build ") + std::to_string(BUILD_NUMBER) + std::string("+") + std::string(BUILD_DATE),
                                     std::string("Film: ") + std::to_string(_render_config.width) + std::string("x") + std::to_string(_render_config.height),
                                     std::string("RenderWork Type: ") + this->GetClassName(),
-                                    std::string("Time elapsed: ") + std::to_string(_stat.time_elapsed) + std::string("s")},
+                                    std::string("Time elapsed: ") + std::to_string(_stat.time_elapsed) + std::string("s"),
+                                    std::string("SSAA: "+std::to_string(_render_config.x_sample)+"x"+std::to_string(_render_config.y_sample))},
                                    glm::vec4(1.0f), 2);
     Canvas canvas(_render_config.width, _render_config.height);
     canvas.layers().push_back(Layer(std::make_shared<Image>(_output), {0, 0}));
@@ -58,15 +59,25 @@ void rendertoy::DepthBufferRenderWork::Render()
     int height = _output.height();
     PixelShader shader = [&](const int x, const int y) -> glm::vec4
     {
-        glm::vec2 screen_coord(static_cast<float>(x) / static_cast<float>(width), static_cast<float>(y) / static_cast<float>(height));
-        glm::vec3 origin, direction;
-        IntersectInfo intersect_info;
-        _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        glm::vec4 contribution(0.0f);
+        for (int xx = 0; xx < _render_config.x_sample; ++xx)
         {
-            return glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
+            for (int yy = 0; yy < _render_config.y_sample; ++yy)
+            {
+                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
+                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
+                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
+                glm::vec3 origin, direction;
+                IntersectInfo intersect_info;
+                _render_config.camera->SpawnRay(screen_coord, origin, direction);
+                if (_render_config.scene->Intersect(origin, direction, intersect_info))
+                {
+                    contribution += glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
+                }
+                contribution += glm::vec4(1.0f);
+            }
         }
-        return glm::vec4(1.0f);
+        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
@@ -86,15 +97,25 @@ void rendertoy::NormalRenderWork::Render()
     int height = _output.height();
     PixelShader shader = [&](const int x, const int y) -> glm::vec4
     {
-        glm::vec2 screen_coord(static_cast<float>(x) / static_cast<float>(width), static_cast<float>(y) / static_cast<float>(height));
-        glm::vec3 origin, direction;
-        IntersectInfo intersect_info;
-        _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        glm::vec4 contribution(0.0f);
+        for (int xx = 0; xx < _render_config.x_sample; ++xx)
         {
-            return glm::vec4(intersect_info._normal, 1.0f);
+            for (int yy = 0; yy < _render_config.y_sample; ++yy)
+            {
+                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
+                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
+                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
+                glm::vec3 origin, direction;
+                IntersectInfo intersect_info;
+                _render_config.camera->SpawnRay(screen_coord, origin, direction);
+                if (_render_config.scene->Intersect(origin, direction, intersect_info))
+                {
+                    contribution += glm::vec4(intersect_info._normal, 1.0f);
+                }
+                contribution += glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            }
         }
-        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
@@ -114,18 +135,28 @@ void rendertoy::AlbedoRenderWork::Render()
     int height = _output.height();
     PixelShader shader = [&](const int x, const int y) -> glm::vec4
     {
-        glm::vec2 screen_coord(static_cast<float>(x) / static_cast<float>(width), static_cast<float>(y) / static_cast<float>(height));
-        glm::vec3 origin, direction;
-        IntersectInfo intersect_info;
-        _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        glm::vec4 contribution(0.0f);
+        for (int xx = 0; xx < _render_config.x_sample; ++xx)
         {
-            if(intersect_info._mat != nullptr)
+            for (int yy = 0; yy < _render_config.y_sample; ++yy)
             {
-                return intersect_info._mat->albedo()->Sample(intersect_info._uv);
+                glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(_render_config.x_sample),
+                                       (static_cast<float>(yy) + 0.5f) / static_cast<float>(_render_config.x_sample));
+                glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(height));
+                glm::vec3 origin, direction;
+                IntersectInfo intersect_info;
+                _render_config.camera->SpawnRay(screen_coord, origin, direction);
+                if (_render_config.scene->Intersect(origin, direction, intersect_info))
+                {
+                    if (intersect_info._mat != nullptr)
+                    {
+                        contribution += intersect_info._mat->albedo()->Sample(intersect_info._uv);
+                    }
+                }
+                contribution += glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             }
         }
-        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.PixelShade(shader);
