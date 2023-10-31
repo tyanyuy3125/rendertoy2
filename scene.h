@@ -7,12 +7,13 @@
 
 namespace rendertoy
 {
+    static std::shared_ptr<ISamplable> default_hdr_background = std::make_shared<ColorTexture>(glm::vec4(0.1f));
+
     class Scene
     {
     private:
         BVH<Primitive> _objects;
-
-        std::shared_ptr<ISamplable> _hdr_background;
+        std::shared_ptr<ISamplable> _hdr_background = default_hdr_background;
     public:
         Scene() = default;
         Scene(const Scene &) = delete;
@@ -24,6 +25,15 @@ namespace rendertoy
         std::vector<std::unique_ptr<Primitive>> &objects()
         {
             return _objects.objects;
+        }
+
+        const std::shared_ptr<ISamplable> &hdr_background() const
+        {
+            return _hdr_background;
+        }
+        std::shared_ptr<ISamplable> &hdr_background()
+        {
+            return _hdr_background;
         }
 
         void Init();

@@ -7,6 +7,9 @@
 
 #include <assimp/vector2.h>
 #include <assimp/vector3.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMeshFromFile(const std::string &path)
 {
@@ -28,18 +31,22 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
         aiMesh *mesh = scene->mMeshes[i];
         auto vertices = mesh->mVertices;
         aiVector3D *uvs = mesh->mTextureCoords[0]; // TODO: UV information may not be stored in channel 0.
+        auto norms = mesh->mNormals; // TODO: exception handling.
         std::unique_ptr<TriangleMesh> tmp = std::make_unique<TriangleMesh>();
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
         {
-            tmp->triangles.objects.push_back(std::make_unique<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]],
+            tmp->_triangles.objects.push_back(std::make_unique<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]],
                                                                         aiVector2D(uvs[mesh->mFaces[j].mIndices[0]].x, uvs[mesh->mFaces[j].mIndices[0]].y),
                                                                         aiVector2D(uvs[mesh->mFaces[j].mIndices[1]].x, uvs[mesh->mFaces[j].mIndices[1]].y),
-                                                                        aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y)));
+                                                                        aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y),
+                                                                        norms[mesh->mFaces[j].mIndices[0]],
+                                                                        norms[mesh->mFaces[j].mIndices[1]],
+                                                                        norms[mesh->mFaces[j].mIndices[2]]));
         }
         INFO << "Mesh " << i << " has " << mesh->mNumFaces << " faces. Now constructing BVH." << std::endl;
         auto aabb = mesh->mAABB;
         tmp->_bbox = BBox(glm::vec3(aabb.mMin.x, aabb.mMin.y, aabb.mMin.z), glm::vec3(aabb.mMax.x, aabb.mMax.y, aabb.mMax.z));
-        tmp->triangles.Construct();
+        tmp->_triangles.Construct();
         ret.push_back(std::move(tmp));
     }
 

@@ -7,6 +7,8 @@
 
 #include <glm/glm.hpp>
 #include <chrono>
+#include <glm/gtc/constants.hpp>
+#include <cmath>
 
 void rendertoy::TestRenderWork::Render()
 {
@@ -40,11 +42,22 @@ const rendertoy::Image rendertoy::IRenderWork::GetResult(const bool print_verbos
 {
     if (!print_verbose)
         return _output;
+    int triangle_count = 0;
+    for (const auto &object : _render_config.scene->objects())
+    {
+        auto object_raw_ptr = object.get();
+        if (object_raw_ptr && typeid(*object_raw_ptr) == typeid(TriangleMesh))
+        {
+            TriangleMesh *tmptr = dynamic_cast<TriangleMesh *>(object.get());
+            triangle_count += tmptr->triangles().size();
+        }
+    }
     Image text = GenerateTextImage({std::string("RenderToy2 Build ") + std::to_string(BUILD_NUMBER) + std::string("+") + std::string(BUILD_DATE),
                                     std::string("Film: ") + std::to_string(_render_config.width) + std::string("x") + std::to_string(_render_config.height),
                                     std::string("RenderWork Type: ") + this->GetClassName(),
                                     std::string("Time elapsed: ") + std::to_string(_stat.time_elapsed) + std::string("s"),
-                                    std::string("SSAA: "+std::to_string(_render_config.x_sample)+"x"+std::to_string(_render_config.y_sample))},
+                                    std::string("SSAA: " + std::to_string(_render_config.x_sample) + "x" + std::to_string(_render_config.y_sample)),
+                                    std::string("Triangles: ") + std::to_string(triangle_count)},
                                    glm::vec4(1.0f), 2);
     Canvas canvas(_render_config.width, _render_config.height);
     canvas.layers().push_back(Layer(std::make_shared<Image>(_output), {0, 0}));
@@ -73,6 +86,7 @@ void rendertoy::DepthBufferRenderWork::Render()
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
                     contribution += glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
+                    continue;
                 }
                 contribution += glm::vec4(1.0f);
             }
@@ -111,6 +125,7 @@ void rendertoy::NormalRenderWork::Render()
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
                     contribution += glm::vec4(intersect_info._normal, 1.0f);
+                    continue;
                 }
                 contribution += glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
             }
@@ -127,6 +142,18 @@ void rendertoy::NormalRenderWork::Render()
 rendertoy::NormalRenderWork::NormalRenderWork(RenderConfig render_config)
     : IRenderWork(render_config)
 {
+}
+
+static glm::vec2 GetUVFromSkySphere(const glm::vec3& normal) {
+    // 将法向量转换为球坐标系
+    float theta = std::acos(normal.y); // theta表示纬度
+    float phi = std::atan2(normal.z, normal.x); // phi表示经度
+
+    // 将球坐标系映射到UV坐标
+    float u = phi / (2.0f * glm::pi<float>()) + 0.5f;
+    float v = 1.0f - (theta / glm::pi<float>());
+
+    return glm::vec2(u, v);
 }
 
 void rendertoy::AlbedoRenderWork::Render()
@@ -151,9 +178,10 @@ void rendertoy::AlbedoRenderWork::Render()
                     if (intersect_info._mat != nullptr)
                     {
                         contribution += intersect_info._mat->albedo()->Sample(intersect_info._uv);
+                        continue;
                     }
                 }
-                contribution += glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                contribution += _render_config.scene->hdr_background()->Sample(GetUVFromSkySphere(direction));
             }
         }
         return contribution * (1.0f / (static_cast<float>(_render_config.x_sample) * static_cast<float>(_render_config.x_sample)));

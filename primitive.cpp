@@ -4,7 +4,7 @@
 
 const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
-    bool ret = triangles.Intersect(origin, direction, intersect_info);
+    bool ret = _triangles.Intersect(origin, direction, intersect_info);
     if(intersect_info._mat == nullptr)
     {
         intersect_info._mat = _mat;
@@ -65,16 +65,6 @@ const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
     return BBox(_origin - glm::vec3(_radius), _origin + glm::vec3(_radius));
 }
 
-rendertoy::Triangle::Triangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec2 &t0, const glm::vec2 &t1, const glm::vec2 &t2)
-    : _vert{p0, p1, p2}, _uv{t0, t1, t2}
-{
-}
-
-rendertoy::Triangle::Triangle(const aiVector3D &p0, const aiVector3D &p1, const aiVector3D &p2, const aiVector2D &t0, const aiVector2D &t1, const aiVector2D &t2)
-    : _vert{glm::vec3(p0.x, p0.y, p0.z), glm::vec3(p1.x, p1.y, p1.z), glm::vec3(p2.x, p2.y, p2.z)}, _uv{glm::vec2(t0.x, t0.y), glm::vec2(t1.x, t1.y), glm::vec2(t2.x, t2.y)}
-{
-}
-
 const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
     glm::vec3 v0v1 = _vert[1] - _vert[0];
@@ -98,7 +88,8 @@ const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::ve
     intersect_info._uv = u * _uv[1] + v * _uv[2] + (1 - u - v) * _uv[0];
     intersect_info._coord = origin + t * direction;
     intersect_info._t = t;
-    intersect_info._normal = glm::normalize(glm::cross(v0v1, v0v2));
+    // intersect_info._normal = glm::normalize(glm::cross(v0v1, v0v2));
+    intersect_info._normal = u * _norm[1] + v * _norm[2] + (1 - u - v) * _norm[0];
     intersect_info._mat = _mat;
     if (glm::dot(intersect_info._normal, direction) > 0.0f)
     {
