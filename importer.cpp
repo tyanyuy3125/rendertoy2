@@ -31,10 +31,10 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
         std::unique_ptr<TriangleMesh> tmp = std::make_unique<TriangleMesh>();
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
         {
-            tmp->triangles.objects.push_back(std::make_unique<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]], 
-            aiVector2D(uvs[mesh->mFaces[j].mIndices[0]].x, uvs[mesh->mFaces[j].mIndices[0]].y), 
-            aiVector2D(uvs[mesh->mFaces[j].mIndices[1]].x, uvs[mesh->mFaces[j].mIndices[1]].y), 
-            aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y)));
+            tmp->triangles.objects.push_back(std::make_unique<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]],
+                                                                        aiVector2D(uvs[mesh->mFaces[j].mIndices[0]].x, uvs[mesh->mFaces[j].mIndices[0]].y),
+                                                                        aiVector2D(uvs[mesh->mFaces[j].mIndices[1]].x, uvs[mesh->mFaces[j].mIndices[1]].y),
+                                                                        aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y)));
         }
         INFO << "Mesh " << i << " has " << mesh->mNumFaces << " faces. Now constructing BVH." << std::endl;
         auto aabb = mesh->mAABB;
@@ -60,8 +60,22 @@ const rendertoy::Image rendertoy::ImportImageFromFile(const std::string &path)
     int channels = in->spec().nchannels;
 
     INFO << "Image opened. Resolution: " << width << "x" << height << ", channels: " << channels << std::endl;
-
     Image ret(width, height);
-    in->read_image(0, 0, 0, 4, OIIO::TypeDesc::FLOAT, &ret._buffer[0]);
+    if (channels == 4)
+        in->read_image(0, 0, 0, 4, OIIO::TypeDesc::FLOAT, &ret._buffer[0]);
+    else if (channels == 3)
+    {
+        std::vector<glm::vec3> temp_buffer(width * height);
+        in->read_image(0, 0, 0, channels, OIIO::TypeDesc::FLOAT, &temp_buffer[0]);
+        for(int i=0;i<width * height;++i)
+        {
+            ret._buffer[i] = glm::vec4(temp_buffer[i], 1.0f);
+        }
+    }
+    else
+    {
+        CRIT << "Not implemented" << std::endl;
+        return Image(16, 16);
+    }
     return ret;
 }

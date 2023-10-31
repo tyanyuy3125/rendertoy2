@@ -57,7 +57,7 @@ namespace rendertoy
         {
             if (begin + 1 == end)
             {
-                node_tree[std::distance(objects.begin(), begin)]._bbox = (*begin) -> GetBoundingBox();
+                node_tree[std::distance(objects.begin(), begin)]._bbox = (*begin)->GetBoundingBox();
                 return static_cast<int>(std::distance(objects.begin(), begin));
             }
 
@@ -80,7 +80,7 @@ namespace rendertoy
 
     public:
         BVH() = default;
-        BVH(const BVH&) = delete;
+        BVH(const BVH &) = delete;
 
         std::vector<std::unique_ptr<AccelerableObject>> objects;
         void Construct()
@@ -92,20 +92,33 @@ namespace rendertoy
         {
             IntersectInfo temp_intersect_info;
             int closest_index = -1;
-
+#define DISABLE_BVH
+#ifdef DISABLE_BVH // For debug purposes.
+            for (int i = 0; i < objects.size(); ++i)
+            {
+                if (objects[i]->Intersect(origin, direction, temp_intersect_info))
+                {
+                    if (closest_index == -1 || temp_intersect_info._t < intersect_info._t)
+                    {
+                        intersect_info = temp_intersect_info;
+                        closest_index = i;
+                    }
+                }
+            }
+#elif
             std::stack<int> traverse_stack;
             traverse_stack.push(static_cast<int>(node_tree.size()) - 1);
-            while(!traverse_stack.empty())
+            while (!traverse_stack.empty())
             {
                 auto stack_top = traverse_stack.top();
                 traverse_stack.pop();
-                if(node_tree[stack_top]._bbox.Intersect(origin, direction))
+                if (node_tree[stack_top]._bbox.Intersect(origin, direction))
                 {
-                    if(stack_top < objects.size())
+                    if (stack_top < objects.size())
                     {
-                        if(objects[stack_top]->Intersect(origin, direction, temp_intersect_info))
+                        if (objects[stack_top]->Intersect(origin, direction, temp_intersect_info))
                         {
-                            if(closest_index == -1 || temp_intersect_info._t < intersect_info._t)
+                            if (closest_index == -1 || temp_intersect_info._t < intersect_info._t)
                             {
                                 intersect_info = temp_intersect_info;
                                 closest_index = stack_top;
@@ -114,19 +127,19 @@ namespace rendertoy
                     }
                     else
                     {
-                        if(node_tree[stack_top].right!=-1)
+                        if (node_tree[stack_top].right != -1)
                         {
                             traverse_stack.push(node_tree[stack_top].right);
                         }
-                        if(node_tree[stack_top].left!=-1)
+                        if (node_tree[stack_top].left != -1)
                         {
                             traverse_stack.push(node_tree[stack_top].left);
                         }
                     }
                 }
             }
-
-            if(closest_index == -1)
+#endif
+            if (closest_index == -1)
             {
                 return false;
             }

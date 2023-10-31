@@ -7,21 +7,26 @@
 
 namespace rendertoy
 {
-    template <SampleMethod _SM = SampleMethod::NEAREST_NEIGHBOUR>
-    class ISamplable
-    {
-    public:
-        virtual const glm::vec4 Sample(const float u, const float v) = 0;
-    };
-
     enum class SampleMethod
     {
         NEAREST_NEIGHBOUR = 0,
         BILINEAR,
     };
 
-    template <SampleMethod _SM = SampleMethod::NEAREST_NEIGHBOUR>
-    class ImageTexture : public ISamplable<_SM>
+    class ISamplable
+    {
+    protected:
+        SampleMethod sample_method;
+
+    public:
+        virtual const glm::vec4 Sample(const float u, const float v) const = 0;
+        const glm::vec4 Sample(const glm::vec2 &uv) const
+        {
+            return Sample(uv.x, uv.y);
+        }
+    };
+
+    class ImageTexture : public ISamplable
     {
     private:
         Image _image;
@@ -31,9 +36,10 @@ namespace rendertoy
         ImageTexture(const int width, const int height) : _image(width, height) {}
         ImageTexture(const std::string &path) : _image(ImportImageFromFile(path)) {}
 
-        virtual const glm::vec4 Sample(const float u, const float v)
+        virtual const glm::vec4 Sample(const float u, float v) const
         {
-            switch (_SM)
+            v = 1.0f - v;
+            switch (sample_method)
             {
             case SampleMethod::NEAREST_NEIGHBOUR:
             {
@@ -56,15 +62,14 @@ namespace rendertoy
                 glm::vec3 c11 = _image(x1, y1);
 
                 glm::vec3 color = (1.0f - tx) * (1.0f - ty) * c00 + tx * (1.0f - ty) * c10 + (1.0f - tx) * ty * c01 + tx * ty * c11;
-                return color;
+                return glm::vec4(color, 1.0f);
                 break;
             }
             }
         }
     };
 
-    template <SampleMethod _SM = SampleMethod::NEAREST_NEIGHBOUR>
-    class ColorTexture : public ISamplable<_SM>
+    class ColorTexture : public ISamplable
     {
     private:
         glm::vec4 _color;
@@ -72,7 +77,7 @@ namespace rendertoy
     public:
         ColorTexture(const glm::vec4 &color) : _color(color) {}
 
-        virtual const glm::vec4 Sample(const float u, const float v)
+        virtual const glm::vec4 Sample(const float u, const float v) const
         {
             return _color;
         }

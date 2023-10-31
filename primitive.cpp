@@ -4,7 +4,12 @@
 
 const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
-    return triangles.Intersect(origin, direction, intersect_info);
+    bool ret = triangles.Intersect(origin, direction, intersect_info);
+    if(intersect_info._mat == nullptr)
+    {
+        intersect_info._mat = _mat;
+    }
+    return ret;
 }
 
 const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
@@ -90,9 +95,11 @@ const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::ve
     glm::float32 t = glm::dot(v0v2, qvec) * invDet;
     if (t < 1e-3f)
         return false;
+    intersect_info._uv = u * _uv[1] + v * _uv[2] + (1 - u - v) * _uv[0];
+    intersect_info._coord = origin + t * direction;
     intersect_info._t = t;
-    // intersect_info.material = triangle_materials[i];
     intersect_info._normal = glm::normalize(glm::cross(v0v1, v0v2));
+    intersect_info._mat = _mat;
     if (glm::dot(intersect_info._normal, direction) > 0.0f)
     {
         intersect_info._normal = -intersect_info._normal;

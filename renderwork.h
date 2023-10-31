@@ -70,4 +70,13 @@ namespace rendertoy
         NormalRenderWork() = delete;
         NormalRenderWork(RenderConfig render_config);
     };
+
+    class AlbedoRenderWork : public IRenderWork
+    {
+        CLASS_METADATA_MARK(AlbedoRenderWork)
+    public:
+        virtual void Render();
+        AlbedoRenderWork() = delete;
+        AlbedoRenderWork(RenderConfig render_config);
+    };
 }

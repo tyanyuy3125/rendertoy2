@@ -3,6 +3,7 @@
 #include "renderwork.h"
 #include "dotfont.h"
 #include "composition.h"
+#include "material.h"
 
 #include <glm/glm.hpp>
 #include <chrono>
@@ -103,6 +104,37 @@ void rendertoy::NormalRenderWork::Render()
 }
 
 rendertoy::NormalRenderWork::NormalRenderWork(RenderConfig render_config)
+    : IRenderWork(render_config)
+{
+}
+
+void rendertoy::AlbedoRenderWork::Render()
+{
+    int width = _output.width();
+    int height = _output.height();
+    PixelShader shader = [&](const int x, const int y) -> glm::vec4
+    {
+        glm::vec2 screen_coord(static_cast<float>(x) / static_cast<float>(width), static_cast<float>(y) / static_cast<float>(height));
+        glm::vec3 origin, direction;
+        IntersectInfo intersect_info;
+        _render_config.camera->SpawnRay(screen_coord, origin, direction);
+        if (_render_config.scene->Intersect(origin, direction, intersect_info))
+        {
+            if(intersect_info._mat != nullptr)
+            {
+                return intersect_info._mat->albedo()->Sample(intersect_info._uv);
+            }
+        }
+        return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    };
+    auto start_time = std::chrono::high_resolution_clock::now();
+    _output.PixelShade(shader);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
+}
+
+rendertoy::AlbedoRenderWork::AlbedoRenderWork(RenderConfig render_config)
     : IRenderWork(render_config)
 {
 }

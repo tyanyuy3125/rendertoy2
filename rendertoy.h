@@ -9,3 +9,5 @@
 #include "composition.h"
 #include "importer.h"
 #include "dotfont.h"
+#include "texture.h"
+#include "material.h"
