@@ -42,7 +42,7 @@ rendertoy::Image::Image(const int width, const int height, const glm::vec4 &fill
 
 void rendertoy::Image::Export(const std::string &filename, const ColorSpace color_space) const
 {
-    std::unique_ptr<OIIO::ImageOutput> out = OIIO::ImageOutput::create(filename);
+    std::shared_ptr<OIIO::ImageOutput> out = OIIO::ImageOutput::create(filename);
     OIIO::ImageSpec spec(_width, _height, 4, OIIO::TypeDesc::FLOAT);
     spec.attribute("oiio:ColorSpace", oiio_color_space_string[static_cast<int>(color_space)]);
     out->open(filename, spec);

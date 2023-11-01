@@ -11,9 +11,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMeshFromFile(const std::string &path)
+const std::vector<std::shared_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMeshFromFile(const std::string &path)
 {
-    std::vector<std::unique_ptr<TriangleMesh>> ret;
+    std::vector<std::shared_ptr<TriangleMesh>> ret;
 
     Assimp::Importer importer;
     const auto scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenBoundingBoxes);
@@ -32,10 +32,10 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
         auto vertices = mesh->mVertices;
         aiVector3D *uvs = mesh->mTextureCoords[0]; // TODO: UV information may not be stored in channel 0.
         auto norms = mesh->mNormals; // TODO: exception handling.
-        std::unique_ptr<TriangleMesh> tmp = std::make_unique<TriangleMesh>();
+        std::shared_ptr<TriangleMesh> tmp = std::make_shared<TriangleMesh>();
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
         {
-            tmp->_triangles.objects.push_back(std::make_unique<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]],
+            tmp->_triangles.objects.push_back(std::make_shared<Triangle>(vertices[mesh->mFaces[j].mIndices[0]], vertices[mesh->mFaces[j].mIndices[1]], vertices[mesh->mFaces[j].mIndices[2]],
                                                                         aiVector2D(uvs[mesh->mFaces[j].mIndices[0]].x, uvs[mesh->mFaces[j].mIndices[0]].y),
                                                                         aiVector2D(uvs[mesh->mFaces[j].mIndices[1]].x, uvs[mesh->mFaces[j].mIndices[1]].y),
                                                                         aiVector2D(uvs[mesh->mFaces[j].mIndices[2]].x, uvs[mesh->mFaces[j].mIndices[2]].y),
@@ -55,7 +55,7 @@ const std::vector<std::unique_ptr<rendertoy::TriangleMesh>> rendertoy::ImportMes
 
 const rendertoy::Image rendertoy::ImportImageFromFile(const std::string &path)
 {
-    std::unique_ptr<OIIO::ImageInput> in = OIIO::ImageInput::open(path);
+    std::shared_ptr<OIIO::ImageInput> in = OIIO::ImageInput::open(path);
     if (!in)
     {
         CRIT << "Could not open image: " << path << std::endl;

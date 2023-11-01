@@ -32,11 +32,11 @@ namespace rendertoy
         Scene() = default;
         Scene(const Scene &) = delete;
 
-        const std::vector<std::unique_ptr<Primitive>> &objects() const
+        const std::vector<std::shared_ptr<Primitive>> &objects() const
         {
             return _objects.objects;
         }
-        std::vector<std::unique_ptr<Primitive>> &objects()
+        std::vector<std::shared_ptr<Primitive>> &objects()
         {
             return _objects.objects;
         }

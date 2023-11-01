@@ -89,10 +89,10 @@ namespace rendertoy
     public:
         TriangleMesh() = default;
         TriangleMesh(const TriangleMesh &) = delete;
-        const std::vector<std::unique_ptr<Triangle>> &triangles() const{
+        const std::vector<std::shared_ptr<Triangle>> &triangles() const{
             return _triangles.objects;
         }
-        friend const std::vector<std::unique_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
+        friend const std::vector<std::shared_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
     };

@@ -11,7 +11,7 @@
 
 namespace rendertoy
 {
-    const std::vector<std::unique_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
+    const std::vector<std::shared_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
 
     const Image ImportImageFromFile(const std::string &path);
 }

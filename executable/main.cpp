@@ -25,11 +25,11 @@ int main()
 
     std::shared_ptr<Scene> scene = std::make_shared<Scene>();
     scene->objects().insert(scene->objects().end(), std::make_move_iterator(ret.begin()), std::make_move_iterator(ret.end()));
-    // scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(0.0f), 1.0f));
-    // scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(10.0f, 0.0f, 0.0f), 2.0f));
-    // scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-5.0f, 0.0f, 0.0f), 1.0f));
-    // scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-5.0f, -5.0f, 0.0f), 1.0f));
-    // scene->objects().push_back(std::make_unique<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
+    // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(0.0f), 1.0f));
+    // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(10.0f, 0.0f, 0.0f), 2.0f));
+    // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-5.0f, 0.0f, 0.0f), 1.0f));
+    // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-5.0f, -5.0f, 0.0f), 1.0f));
+    // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
     scene->Init();
     INFO << "Scene inited." << std::endl;
 

@@ -54,7 +54,7 @@ namespace rendertoy
     {
     private:
         std::vector<BVHNode> node_tree;
-        const int RecursiveConstruct(std::vector<std::unique_ptr<AccelerableObject>>::iterator begin, std::vector<std::unique_ptr<AccelerableObject>>::iterator end)
+        const int RecursiveConstruct(std::vector<std::shared_ptr<AccelerableObject>>::iterator begin, std::vector<std::shared_ptr<AccelerableObject>>::iterator end)
         {
             if (begin + 1 == end)
             {
@@ -68,7 +68,7 @@ namespace rendertoy
                 overall_bbox.Union((*it)->GetBoundingBox());
             }
             int longest_axis = overall_bbox.GetLongestAxis();
-            std::sort(begin, end, [&](const std::unique_ptr<AccelerableObject> &a, const std::unique_ptr<AccelerableObject> &b) -> bool
+            std::sort(begin, end, [&](const std::shared_ptr<AccelerableObject> &a, const std::shared_ptr<AccelerableObject> &b) -> bool
                       { return a->GetBoundingBox().GetCenter()[longest_axis] < b->GetBoundingBox().GetCenter()[longest_axis]; });
 
             auto mid = std::next(begin, std::distance(begin, end) / 2);
@@ -83,7 +83,7 @@ namespace rendertoy
         BVH() = default;
         BVH(const BVH &) = delete;
 
-        std::vector<std::unique_ptr<AccelerableObject>> objects;
+        std::vector<std::shared_ptr<AccelerableObject>> objects;
         void Construct()
         {
             node_tree.resize(objects.size());
