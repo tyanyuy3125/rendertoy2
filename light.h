@@ -7,6 +7,12 @@
 
 namespace rendertoy
 {
+    class Light
+    {
+    public:
+        virtual const glm::vec3 Sample(float &pdf) const;
+    };
+
     class SurfaceLight
     {
     public: // TODO: Standarize
