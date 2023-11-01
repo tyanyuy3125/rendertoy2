@@ -175,24 +175,32 @@ void rendertoy::PathTracingRenderWork::Render()
     PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
     {
         glm::vec3 ret = glm::vec3(0.0f);
-        for(int i=0;i<4;++i)
+        for(int i=0;i<16;++i)
         {
             glm::vec3 factor = glm::vec3(1.0f);
             glm::vec3 ret_per_iter = glm::vec3(0.0f);
             glm::vec3 origin, direction;
             IntersectInfo intersect_info;
+            float pdf;
+            glm::vec3 bsdf;
             _render_config.camera->SpawnRay(screen_coord, origin, direction);
-            for(int j=0;j<16;++j)
+            for(int j=0;j<4;++j)
             {
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
+                    // 更新结果亮度项
                     ret_per_iter += factor * intersect_info._mat->EvalEmissive(intersect_info);
-                    factor *= intersect_info._mat->Eval(intersect_info);
+
+                    // 更新出射采样光线
                     origin = intersect_info._coord;
-                    direction = intersect_info.GenerateSurfaceCoordinates() * intersect_info._mat->Sample(intersect_info);
+                    direction = intersect_info._mat->Sample(intersect_info, pdf, bsdf);
+                    
+                    // 更新因子项
+                    factor = (1.0f / pdf) * glm::dot(direction, intersect_info._normal) * bsdf * factor;
                 }
                 else
                 {
+                    // 光线撞击到 HDRI 背景图像 / 纯色背景等可采样管线
                     ret_per_iter += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
                     break;
                 }

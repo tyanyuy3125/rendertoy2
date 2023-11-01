@@ -1,4 +1,5 @@
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/random.hpp>
 
 #include "primitive.h"
 
@@ -15,6 +16,12 @@ const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm
 const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
 {
     return _bbox;
+}
+
+const void rendertoy::TriangleMesh::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+{
+    int idx = glm::linearRand<int>(0, this->triangles().size() - 1);
+    this->triangles()[idx]->GenerateSamplePointOnSurface(uv, coord);
 }
 
 rendertoy::UVSphere::UVSphere(const glm::vec3 &origin, const float &radius)
@@ -65,6 +72,11 @@ const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
     return BBox(_origin - glm::vec3(_radius), _origin + glm::vec3(_radius));
 }
 
+const void rendertoy::UVSphere::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+{
+    return void();
+}
+
 const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
     glm::vec3 v0v1 = _vert[1] - _vert[0];
@@ -113,4 +125,19 @@ const rendertoy::BBox rendertoy::Triangle::GetBoundingBox() const
         pmax.z = std::max(_vert[i].z, pmax.z);
     }
     return BBox{pmin, pmax};
+}
+
+const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+{
+    float u = glm::linearRand<float>(0.0f, 1.0f);
+    float v = glm::linearRand<float>(0.0f, 1.0f);
+    glm::vec3 v0v1 = _vert[1] - _vert[0];
+    glm::vec3 v0v2 = _vert[2] - _vert[0];
+    if(u + v > 1.0f)
+    {
+        u = 1.0f - u;
+        v = 1.0f - v;
+    }
+    coord = u * v0v1 + v * v0v2;
+    uv = glm::vec2(u, v);
 }

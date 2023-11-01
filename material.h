@@ -31,7 +31,7 @@ namespace rendertoy
         : _albedo(albedo) {}
         virtual const glm::vec3 EvalEmissive(const IntersectInfo &) const = 0;
         virtual const glm::vec3 Eval(const IntersectInfo &) const = 0;
-        virtual const glm::vec3 Sample(const IntersectInfo &) const = 0;
+        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const = 0;
     };
 
     class DiffuseBSDF : public IMaterial
@@ -41,7 +41,7 @@ namespace rendertoy
         : IMaterial(albedo) {}
         virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
-        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info) const;
+        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 
     class Emissive : public IMaterial
@@ -52,7 +52,7 @@ namespace rendertoy
         : IMaterial(albedo), _strength(strength) {}
         virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
         virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
-        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info) const;
+        virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 
 }

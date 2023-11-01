@@ -29,6 +29,7 @@ namespace rendertoy
         }
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const = 0;
         virtual const BBox GetBoundingBox() const = 0;
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const = 0;
 
         virtual ~Primitive() {}
     };
@@ -66,6 +67,7 @@ namespace rendertoy
         {}
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const;
     };
 
     class UVSphere : public Primitive
@@ -78,6 +80,7 @@ namespace rendertoy
         UVSphere(const glm::vec3 &origin, const float &radius);
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const;
     };
 
     class TriangleMesh : public Primitive
@@ -95,5 +98,6 @@ namespace rendertoy
         friend const std::vector<std::shared_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const;
     };
 }
