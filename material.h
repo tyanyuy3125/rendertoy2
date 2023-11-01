@@ -29,8 +29,17 @@ namespace rendertoy
     public:
         IMaterial(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
         : _albedo(albedo) {}
-        virtual const glm::vec3 EvalEmissive(const IntersectInfo &) const = 0;
-        virtual const glm::vec3 Eval(const IntersectInfo &) const = 0;
+        /// @brief 
+        /// @param uv 
+        /// @note Plane light should not be IES-like, so taking uv is enough.
+        /// @return 
+        virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const = 0;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const = 0;
+        /// @brief Generates new sample light from the intersection point, and computes corresponding PDF & BSDF.
+        /// @param intersect_info 
+        /// @param pdf 
+        /// @param bsdf 
+        /// @return Direction of new sample light.
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const = 0;
     };
 
@@ -39,8 +48,8 @@ namespace rendertoy
     public:
         DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
         : IMaterial(albedo) {}
-        virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
-        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
+        virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 
@@ -50,8 +59,8 @@ namespace rendertoy
     public:
         Emissive(const std::shared_ptr<ISamplableColor> &albedo = default_albedo, const std::shared_ptr<ISamplableNumerical> &strength = default_strength)
         : IMaterial(albedo), _strength(strength) {}
-        virtual const glm::vec3 EvalEmissive(const IntersectInfo &intersect_info) const;
-        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info) const;
+        virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 

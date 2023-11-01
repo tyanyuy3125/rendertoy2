@@ -17,6 +17,7 @@ int main()
     // Image result = test_renderer.GetResult();
     // result.Export("/Users/tyanyuy3125/Pictures/test.png");
     #ifdef _WIN32
+    auto ret = ImportMeshFromFile("E:/cornellbox2.obj");
     #else
     auto ret = ImportMeshFromFile("/Users/tyanyuy3125/cornellbox.obj");
     // auto ret = ImportMeshFromFile("/Users/tyanyuy3125/monkey.obj");
@@ -30,8 +31,6 @@ int main()
     // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-5.0f, 0.0f, 0.0f), 1.0f));
     // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-5.0f, -5.0f, 0.0f), 1.0f));
     // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
-    scene->Init();
-    INFO << "Scene inited." << std::endl;
 
     std::shared_ptr<ISamplableColor> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -41,16 +40,23 @@ int main()
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
-    scene->objects()[0]->mat() = mat_red;
-    scene->objects()[1]->mat() = mat_white;
-    scene->objects()[2]->mat() = mat_white;
-    scene->objects()[3]->mat() = mat_white;
-    scene->objects()[4]->mat() = mat_green;
-    scene->objects()[5]->mat() = mat_emissive;
+    scene->objects()[0]->mat() = mat_white;
+    // scene->objects()[1]->mat() = mat_white;
+    // scene->objects()[2]->mat() = mat_white;
+    scene->objects()[1]->mat() = mat_emissive;
+    scene->objects()[2]->mat() = mat_red;
+    scene->objects()[3]->mat() = mat_green;
+
+    scene->Init();
+    INFO << "Scene inited." << std::endl;
 
     // std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
+#ifdef _WIN32
+    // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("E:/rooftop_night_1k.hdr");
+#else
     // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
-    std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+#endif
+    std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
     hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
 
@@ -63,6 +69,8 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
+    conf.spp = 32;
+    conf.gamma = 2.2f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);

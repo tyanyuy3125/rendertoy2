@@ -11,9 +11,11 @@ namespace rendertoy
 {
     struct RenderConfig
     {
-        // Film resolution
+        // Film
         int width = 1920;
         int height = 1080;
+        float exposure = 0.5f;
+        float gamma = 2.2f;
 
         std::shared_ptr<Camera> camera;
         std::shared_ptr<Scene> scene;
@@ -25,6 +27,9 @@ namespace rendertoy
         // Antialiasing
         uint32_t x_sample = 4;
         uint32_t y_sample = 4;
+
+        // Path tracing
+        int spp = 16;
     };
 
     struct RenderStat

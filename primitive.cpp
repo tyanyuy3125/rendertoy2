@@ -2,6 +2,7 @@
 #include <glm/gtc/random.hpp>
 
 #include "primitive.h"
+#include "logger.h"
 
 const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
@@ -18,10 +19,16 @@ const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
     return _bbox;
 }
 
-const void rendertoy::TriangleMesh::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+const float rendertoy::TriangleMesh::GetArea() const
 {
-    int idx = glm::linearRand<int>(0, this->triangles().size() - 1);
-    this->triangles()[idx]->GenerateSamplePointOnSurface(uv, coord);
+    CRIT << "Not implemented." <<std::endl;
+    return 0.0f;
+}
+
+const void rendertoy::TriangleMesh::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
+{
+    int idx = glm::linearRand<int>(0, static_cast<int>(this->triangles().size()) - 1);
+    this->triangles()[idx]->GenerateSamplePointOnSurface(uv, coord, normal);
 }
 
 rendertoy::UVSphere::UVSphere(const glm::vec3 &origin, const float &radius)
@@ -72,7 +79,13 @@ const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
     return BBox(_origin - glm::vec3(_radius), _origin + glm::vec3(_radius));
 }
 
-const void rendertoy::UVSphere::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+const float rendertoy::UVSphere::GetArea() const
+{
+    CRIT << "Not implemented." <<std::endl;
+    return 0.0f;
+}
+
+const void rendertoy::UVSphere::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
 {
     return void();
 }
@@ -127,7 +140,12 @@ const rendertoy::BBox rendertoy::Triangle::GetBoundingBox() const
     return BBox{pmin, pmax};
 }
 
-const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord) const
+const float rendertoy::Triangle::GetArea() const
+{
+    return glm::length(glm::cross(_vert[1] - _vert[0], _vert[2] - _vert[0])) / 2.0f;
+}
+
+const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
 {
     float u = glm::linearRand<float>(0.0f, 1.0f);
     float v = glm::linearRand<float>(0.0f, 1.0f);
@@ -140,4 +158,5 @@ const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm:
     }
     coord = u * v0v1 + v * v0v2;
     uv = glm::vec2(u, v);
+    normal = u * _norm[1] + v * _norm[2] + (1 - u - v) * _norm[0];
 }
