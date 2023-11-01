@@ -149,14 +149,12 @@ const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm:
 {
     float u = glm::linearRand<float>(0.0f, 1.0f);
     float v = glm::linearRand<float>(0.0f, 1.0f);
-    glm::vec3 v0v1 = _vert[1] - _vert[0];
-    glm::vec3 v0v2 = _vert[2] - _vert[0];
     if(u + v > 1.0f)
     {
         u = 1.0f - u;
         v = 1.0f - v;
     }
-    coord = u * v0v1 + v * v0v2;
+    coord = u * _vert[1] + v * _vert[2] + (1.0f - u - v) * _vert[0];
     uv = glm::vec2(u, v);
-    normal = u * _norm[1] + v * _norm[2] + (1 - u - v) * _norm[0];
+    normal = u * _norm[1] + v * _norm[2] + (1.0f - u - v) * _norm[0];
 }

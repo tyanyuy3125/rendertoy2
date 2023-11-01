@@ -17,7 +17,7 @@ int main()
     // Image result = test_renderer.GetResult();
     // result.Export("/Users/tyanyuy3125/Pictures/test.png");
     #ifdef _WIN32
-    auto ret = ImportMeshFromFile("E:/cornellbox2.obj");
+    auto ret = ImportMeshFromFile("E:/cornellbox.obj");
     #else
     auto ret = ImportMeshFromFile("/Users/tyanyuy3125/cornellbox.obj");
     // auto ret = ImportMeshFromFile("/Users/tyanyuy3125/monkey.obj");
@@ -41,11 +41,11 @@ int main()
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
     scene->objects()[0]->mat() = mat_white;
-    // scene->objects()[1]->mat() = mat_white;
-    // scene->objects()[2]->mat() = mat_white;
-    scene->objects()[1]->mat() = mat_emissive;
-    scene->objects()[2]->mat() = mat_red;
-    scene->objects()[3]->mat() = mat_green;
+    scene->objects()[1]->mat() = mat_white;
+    scene->objects()[2]->mat() = mat_white;
+    scene->objects()[3]->mat() = mat_emissive;
+    scene->objects()[4]->mat() = mat_red;
+    scene->objects()[5]->mat() = mat_green;
 
     scene->Init();
     INFO << "Scene inited." << std::endl;
@@ -69,7 +69,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 32;
+    conf.spp = 16;
     conf.gamma = 2.2f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

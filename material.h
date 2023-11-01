@@ -34,6 +34,10 @@ namespace rendertoy
         /// @note Plane light should not be IES-like, so taking uv is enough.
         /// @return 
         virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const = 0;
+        /// @brief 
+        /// @param intersect_info 
+        /// @param out 
+        /// @return BSDF.
         virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const = 0;
         /// @brief Generates new sample light from the intersection point, and computes corresponding PDF & BSDF.
         /// @param intersect_info 

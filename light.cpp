@@ -11,10 +11,10 @@ const glm::vec3 rendertoy::SurfaceLight::Sample(const Scene &scene, const Inters
     glm::vec2 uv;
     glm::vec3 coord;
     glm::vec3 dir;
-    glm::vec3 normal;
-    _surface_primitive->GenerateSamplePointOnSurface(uv, coord, normal);
+    glm::vec3 light_normal;
+    _surface_primitive->GenerateSamplePointOnSurface(uv, coord, light_normal);
     dir = coord - intersect_info._coord;
-    float projected_area = std::abs(glm::dot(normal, dir) * _surface_primitive->GetArea());
+    float projected_area = std::abs(glm::dot(light_normal, dir) * _surface_primitive->GetArea());
     if(glm::dot(dir, intersect_info._normal) < 0.0f)
     {
         return glm::vec3(0.0f);

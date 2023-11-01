@@ -189,7 +189,7 @@ void rendertoy::PathTracingRenderWork::Render()
             float pdf;
             glm::vec3 bsdf;
             _render_config.camera->SpawnRay(screen_coord, origin, direction);
-            for (int j = 0; j < 1; ++j)
+            for (int j = 0; j < 4; ++j)
             {
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
@@ -208,7 +208,7 @@ void rendertoy::PathTracingRenderWork::Render()
 #ifndef DISABLE_DLS
                     glm::vec3 dls_direction;
                     glm::vec3 dls_contrib = factor * _render_config.scene->SampleLights(intersect_info, pdf, dls_direction);
-                    if(dls_contrib != glm::vec3(0.0f))
+                    if(glm::dot(dls_contrib, dls_contrib) > 1e-5)
                     {
                         ret_per_iter += (1.0f / pdf) * glm::dot(dls_direction, intersect_info._normal) * intersect_info._mat->Eval(intersect_info, dls_direction) * dls_contrib;
                     }

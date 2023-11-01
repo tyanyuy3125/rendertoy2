@@ -76,9 +76,26 @@ void rendertoy::Image::PixelShade(const rendertoy::PixelShader &shader)
 
 void rendertoy::Image::PixelShadeSSAA(const rendertoy::PixelShaderSSAA &shader, const int x_sample, const int y_sample)
 {
+// #define DISABLE_PARALLEL
 #ifdef DISABLE_PARALLEL
-    CRIT << "Not implemented." << std::endl;
-    return;
+        for (int x = 0; x < _width; ++x)
+        {
+            for (int y = 0; y < _height; ++y)
+            {
+                glm::vec4 contribution(0.0f);
+                for (int xx = 0; xx < x_sample; ++xx)
+                {
+                    for (int yy = 0; yy < y_sample; ++yy)
+                    {
+                        glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(x_sample),
+                                            (static_cast<float>(yy) + 0.5f) / static_cast<float>(x_sample));
+                        glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(_width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(_height));
+                        contribution += shader(screen_coord);
+                    }
+                }
+                (*this)(x, y) = contribution * (1.0f / (static_cast<float>(x_sample) * static_cast<float>(y_sample)));
+            }
+        }
 #else
     tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int>& r) {
         for (int x = r.rows().begin(); x < r.rows().end(); ++x)
