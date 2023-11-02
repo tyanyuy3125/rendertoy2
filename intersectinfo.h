@@ -4,10 +4,12 @@
 #include <memory>
 
 #include "rendertoy_internal.h"
+// #include "primitive.h"
 
 namespace rendertoy
 {
     class IMaterial;
+    class Primitive;
 
     struct IntersectInfo
     {
@@ -17,6 +19,7 @@ namespace rendertoy
         glm::float32 _t;
         glm::vec3 _normal;
         std::shared_ptr<IMaterial> _mat;
+        Primitive *_primitive;
 
         const glm::mat3 GenerateSurfaceCoordinates() const;
     };

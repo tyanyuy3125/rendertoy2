@@ -117,6 +117,7 @@ const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::ve
     intersect_info._normal = u * _norm[1] + v * _norm[2] + (1 - u - v) * _norm[0];
     intersect_info._mat = _mat;
     intersect_info._in = -direction;
+    intersect_info._primitive = (Primitive *)this;
     if (glm::dot(intersect_info._normal, direction) > 0.0f)
     {
         intersect_info._normal = -intersect_info._normal;
@@ -145,6 +146,11 @@ const float rendertoy::Triangle::GetArea() const
     return glm::length(glm::cross(_vert[1] - _vert[0], _vert[2] - _vert[0])) / 2.0f;
 }
 
+const rendertoy::SurfaceLight *rendertoy::Triangle::GetSurfaceLight() const
+{
+    return _surface_light;
+}
+
 const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
 {
     float u = glm::linearRand<float>(0.0f, 1.0f);
@@ -157,4 +163,34 @@ const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm:
     coord = u * _vert[1] + v * _vert[2] + (1.0f - u - v) * _vert[0];
     uv = glm::vec2(u, v);
     normal = u * _norm[1] + v * _norm[2] + (1.0f - u - v) * _norm[0];
+}
+
+const float rendertoy::Triangle::Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const
+{
+    float projected_area = std::abs(glm::dot(this->GetNormal(uv), glm::normalize(observation_to_primitive))) * GetArea();
+    if(std::abs(projected_area) < 1e-4)
+    {
+        return 0.0f;
+    }
+    return glm::dot(observation_to_primitive, observation_to_primitive) / projected_area;
+}
+
+const glm::vec3 rendertoy::Triangle::GetNormal(const glm::vec2 &uv) const
+{
+    return uv.x * _norm[1] + uv.y * _norm[2] + (1.0f - uv.x - uv.y) * _norm[0];
+}
+
+const rendertoy::SurfaceLight *rendertoy::Primitive::GetSurfaceLight() const
+{
+    return nullptr;
+}
+
+const float rendertoy::Primitive::Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const
+{
+    return 0.0f;
+}
+
+const glm::vec3 rendertoy::Primitive::GetNormal(const glm::vec2 &uv) const
+{
+    return glm::vec3(0.0f);
 }

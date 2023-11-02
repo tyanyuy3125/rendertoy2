@@ -8,15 +8,19 @@
 #include "rendertoy_internal.h"
 #include "accelerate.h"
 #include "intersectinfo.h"
+// #include "light.h"
 
 namespace rendertoy
 {
     class IMaterial;
+    class SurfaceLight;
 
     class Primitive
     {
     protected:
         std::shared_ptr<IMaterial> _mat = nullptr;
+    public: // TODO: 临时措施
+        SurfaceLight *_surface_light = nullptr;
 
     public:
         const std::shared_ptr<IMaterial> &mat() const
@@ -31,6 +35,9 @@ namespace rendertoy
         virtual const BBox GetBoundingBox() const = 0;
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const = 0;
         virtual const float GetArea() const = 0;
+        virtual const SurfaceLight *GetSurfaceLight() const;
+        virtual const float Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const;
+        virtual const glm::vec3 GetNormal(const glm::vec2 &uv) const;
         virtual ~Primitive() {}
     };
 
@@ -68,7 +75,10 @@ namespace rendertoy
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
         virtual const float GetArea() const;
+        virtual const SurfaceLight *GetSurfaceLight() const;
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
+        virtual const float Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const;
+        virtual const glm::vec3 GetNormal(const glm::vec2 &uv) const;
     };
 
     class UVSphere : public Primitive

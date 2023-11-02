@@ -8,8 +8,9 @@ const glm::vec3 rendertoy::DiffuseBSDF::EvalEmissive(const glm::vec2 &uv) const
     return glm::vec3(0.0f);
 }
 
-const glm::vec3 rendertoy::DiffuseBSDF::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const
+const glm::vec3 rendertoy::DiffuseBSDF::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const
 {
+    pdf = 1.0f / (2.0f * glm::pi<float>());
     return glm::vec3(_albedo->Sample(intersect_info._uv)) * glm::vec3(1.0f / glm::pi<float>());
 }
 
@@ -27,8 +28,9 @@ const glm::vec3 rendertoy::Emissive::EvalEmissive(const glm::vec2 &uv) const
     return glm::vec3(_albedo->Sample(uv)) * _strength->Sample(uv);
 }
 
-const glm::vec3 rendertoy::Emissive::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const
+const glm::vec3 rendertoy::Emissive::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const
 {
+    pdf = 1.0f / (2.0f * glm::pi<float>());
     return glm::vec3(_albedo->Sample(intersect_info._uv)) * glm::vec3(1.0f / glm::pi<float>());
 }
 

@@ -24,6 +24,7 @@ namespace rendertoy
     {
     private:
         std::shared_ptr<Primitive> _surface_primitive;
+    public: // TODO: 临时措施
         std::shared_ptr<IMaterial> _material;
     public:
         SurfaceLight() = delete;

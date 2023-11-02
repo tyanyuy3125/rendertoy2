@@ -38,7 +38,7 @@ namespace rendertoy
         /// @param intersect_info 
         /// @param out 
         /// @return BSDF.
-        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const = 0;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const = 0;
         /// @brief Generates new sample light from the intersection point, and computes corresponding PDF & BSDF.
         /// @param intersect_info 
         /// @param pdf 
@@ -53,7 +53,7 @@ namespace rendertoy
         DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
         : IMaterial(albedo) {}
         virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const;
-        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 
@@ -64,7 +64,7 @@ namespace rendertoy
         Emissive(const std::shared_ptr<ISamplableColor> &albedo = default_albedo, const std::shared_ptr<ISamplableNumerical> &strength = default_strength)
         : IMaterial(albedo), _strength(strength) {}
         virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const;
-        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out) const;
+        virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const;
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 

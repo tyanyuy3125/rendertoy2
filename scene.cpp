@@ -18,6 +18,7 @@ void rendertoy::Scene::Init()
             for (const std::shared_ptr<Primitive> triangle : dynamic_cast<TriangleMesh *>(object.get())->triangles())
             {
                 _dls_lights.push_back(std::make_shared<SurfaceLight>(triangle, object->mat()));
+                object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
             }
         }
         else if (typeid(*(object.get())) == typeid(TriangleMesh))
@@ -27,6 +28,7 @@ void rendertoy::Scene::Init()
                 if (!object->mat().get() && typeid(*(triangle->mat().get())) == typeid(Emissive))
                 {
                     _dls_lights.push_back(std::make_shared<SurfaceLight>(triangle, triangle->mat()));
+                    object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
                 }
             }
         }
@@ -35,6 +37,7 @@ void rendertoy::Scene::Init()
             if (typeid(*(object->mat().get())) == typeid(Emissive))
             {
                 _dls_lights.push_back(std::make_shared<SurfaceLight>(object, object->mat()));
+                object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
             }
         }
     }
@@ -45,8 +48,9 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 
     return _objects.Intersect(origin, direction, intersect_info);
 }
 
-const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const
+const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light) const
 {
     int idx = glm::linearRand<int>(0, static_cast<int>(_dls_lights.size()) - 1);
+    sampled_light = (SurfaceLight *)_dls_lights[idx].get();
     return _dls_lights[idx]->Sample(*this, intersect_info, pdf, direction);
 }

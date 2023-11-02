@@ -4,6 +4,7 @@
 #include "dotfont.h"
 #include "composition.h"
 #include "material.h"
+#include "integrater.h"
 
 #include <glm/glm.hpp>
 #include <chrono>
@@ -186,7 +187,7 @@ void rendertoy::PathTracingRenderWork::Render()
             glm::vec3 ret_per_iter = glm::vec3(0.0f);
             glm::vec3 origin, direction;
             IntersectInfo intersect_info;
-            float pdf;
+            float pdf_next, pdf_light, pdf_scattering;
             glm::vec3 bsdf;
             _render_config.camera->SpawnRay(screen_coord, origin, direction);
             for (int j = 0; j < 4; ++j)
@@ -198,19 +199,35 @@ void rendertoy::PathTracingRenderWork::Render()
 
                     // 更新出射采样光线
                     origin = intersect_info._coord;
-                    direction = intersect_info._mat->Sample(intersect_info, pdf, bsdf);
+                    direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf);
 
                     // 更新因子项
-                    factor = (1.0f / pdf) * glm::dot(direction, intersect_info._normal) * bsdf * factor;
+                    factor = (1.0f / pdf_next) * glm::dot(direction, intersect_info._normal) * bsdf * factor;
 
-                    // 更新直接光源采样项，这里覆盖了此前的 pdf
+                    // 更新直接光源采样项
 // #define DISABLE_DLS
 #ifndef DISABLE_DLS
+                    // 在直接光源采样中，对光源进行采样
                     glm::vec3 dls_direction;
-                    glm::vec3 dls_contrib = factor * _render_config.scene->SampleLights(intersect_info, pdf, dls_direction);
-                    if(glm::dot(dls_contrib, dls_contrib) > 1e-5)
+                    SurfaceLight *sampled_light = nullptr;
+                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light);
+                    glm::vec3 mat_bsdf;
+                    if(glm::dot(dls_Li, dls_Li) > 1e-5)
                     {
-                        ret_per_iter += (1.0f / pdf) * glm::dot(dls_direction, intersect_info._normal) * intersect_info._mat->Eval(intersect_info, dls_direction) * dls_contrib;
+                        mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
+                        ret_per_iter += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
+                    }
+
+                    // 在直接光源采样中，对BS(R)DF进行采样(PBRT的实现)
+                    glm::vec3 dls_origin = intersect_info._coord;
+                    dls_direction = intersect_info._mat->Sample(intersect_info, pdf_scattering, mat_bsdf);
+                    IntersectInfo dls_intersect_info;
+                    if(_render_config.scene->Intersect(dls_origin, dls_direction, dls_intersect_info))
+                    {
+                        if(dls_intersect_info._primitive->GetSurfaceLight() == sampled_light){
+                            pdf_light = dls_intersect_info._primitive->Pdf(dls_intersect_info._coord - dls_origin, dls_intersect_info._uv);
+                            ret_per_iter += factor * PowerHeuristic(1, pdf_scattering, 1, pdf_light) * (1.0f / pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * sampled_light->_material->EvalEmissive(dls_intersect_info._uv);
+                        }
                     }
 #endif // DISABLE_DLS
                 }
