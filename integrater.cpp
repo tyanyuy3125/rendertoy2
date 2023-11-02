@@ -2,6 +2,8 @@
 
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
+#include <cmath>
+#include <stdexcept>
 
 const glm::vec3 rendertoy::UniformSampleHemisphere()
 {
