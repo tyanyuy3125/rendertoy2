@@ -142,4 +142,11 @@ namespace rendertoy
         virtual const glm::vec3 Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const;
     };
 
+    class Specular : public IMaterial
+    {
+    public:
+        Specular(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
+        : IMaterial(albedo) {}
+    };
+
 }

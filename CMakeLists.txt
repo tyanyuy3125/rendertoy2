@@ -36,7 +36,8 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               color.h color.cpp
                               material.h material.cpp
                               integrater.h integrater.cpp
-                              light.h light.cpp)
+                              light.h light.cpp
+                              fresnel.h fresnel.cpp)
 
 add_dependencies(RenderToy2 update_build_number)
 
