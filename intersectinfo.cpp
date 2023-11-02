@@ -3,29 +3,29 @@
 const glm::mat3 rendertoy::IntersectInfo::GenerateSurfaceCoordinates() const
 {
     /*
-    i   y   o
+    i   z   o
      \  |  /
       \ | /
         .---x
          \
           \
-           z
+           y
     */
-    glm::vec3 y = _normal;
-    glm::vec3 z = glm::normalize(glm::cross(y, _in));
-    if(std::abs(glm::dot(z,z)) < 1e-4f)
+    glm::vec3 z = _normal;
+    glm::vec3 y = glm::normalize(glm::cross(z, _in));
+    if(std::abs(glm::dot(y,y)) < 1e-4f)
     {
-        auto z_0 = glm::cross(y, glm::vec3(1.0f, 0.0f, 0.0f));
-        auto z_1 = glm::cross(y, glm::vec3(0.0f, 1.0f, 0.0f));
-        if(std::abs(glm::dot(z_0, z_0)) < 1e-4f)
+        auto y_0 = glm::cross(z, glm::vec3(1.0f, 0.0f, 0.0f));
+        auto y_1 = glm::cross(z, glm::vec3(0.0f, 1.0f, 0.0f));
+        if(std::abs(glm::dot(y_0, y_0)) < 1e-4f)
         {
-            z = glm::normalize(z_1);
+            y = glm::normalize(y_1);
         }
         else
         {
-            z = glm::normalize(z_0);
+            y = glm::normalize(y_0);
         }
     }
-    glm::vec3 x = glm::cross(y, z);
+    glm::vec3 x = glm::cross(z, y);
     return glm::mat3(x, y, z);
 }

@@ -9,19 +9,23 @@
 #include "texture.h"
 #include "light.h"
 
-#define MATERIAL_SOCKET(name, isamplable_type) \
-protected:\
-std::shared_ptr<ISamplable##isamplable_type> _##name = default_##name;\
-public:\
-const std::shared_ptr<ISamplable##isamplable_type>& name() const\
-{\
-    return _##name;\
-}\
-std::shared_ptr<ISamplable##isamplable_type>& name()\
-{\
-    return _##name;\
-}\
-private:\
+#ifndef MATERIAL_SOCKET
+#define MATERIAL_SOCKET(name, isamplable_type)                             \
+protected:                                                                 \
+    std::shared_ptr<ISamplable##isamplable_type> _##name = default_##name; \
+                                                                           \
+public:                                                                    \
+    const std::shared_ptr<ISamplable##isamplable_type> &name() const       \
+    {                                                                      \
+        return _##name;                                                    \
+    }                                                                      \
+    std::shared_ptr<ISamplable##isamplable_type> &name()                   \
+    {                                                                      \
+        return _##name;                                                    \
+    }                                                                      \
+                                                                           \
+private:
+#endif
 
 namespace rendertoy
 {
@@ -35,6 +39,7 @@ namespace rendertoy
         std::vector<std::shared_ptr<Light>> _lights;
 
         MATERIAL_SOCKET(hdr_background, Color);
+
     public:
         Scene() = default;
         Scene(const Scene &) = delete;

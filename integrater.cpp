@@ -4,21 +4,17 @@
 #include <glm/gtc/constants.hpp>
 #include <cmath>
 #include <stdexcept>
+#include <algorithm>
 
 const glm::vec3 rendertoy::UniformSampleHemisphere()
 {
+    float u0 = glm::linearRand(0.0f, 1.0f);
     float u1 = glm::linearRand(0.0f, 1.0f);
-    float u2 = glm::linearRand(0.0f, 1.0f);
 
-    float phi = 2.0f * glm::pi<float>() * u1;
-    float cosTheta = u2;
-    float sinTheta = std::sqrt(1.0f - u2 * u2);
-
-    float x = sinTheta * std::cos(phi);
-    float y = cosTheta;
-    float z = sinTheta * std::sin(phi);
-
-    return glm::vec3(x, y, z);
+    float z = u0;
+    float r = std::sqrt(std::max(0.0f, 1.0f - z * z));
+    float phi = 2 * glm::pi<float>() * u1;
+    return glm::vec3(r * std::cos(phi), r * std::sin(phi), z);
 }
 
 const float rendertoy::PowerHeuristic(int nf, float f_pdf, int ng, float g_pdf)

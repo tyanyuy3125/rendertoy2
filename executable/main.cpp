@@ -36,7 +36,7 @@ int main()
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableNumerical> emissive_strength = std::make_shared<ConstantNumerical>(10.0f);
-    std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>();
+    std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>(tex_white, 0.5f);
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
@@ -69,7 +69,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 32;
+    conf.spp = 96;
     conf.gamma = 2.2f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();
@@ -79,16 +79,6 @@ int main()
     #else
     result.Export("/Users/tyanyuy3125/Pictures/test.png");
     #endif // _WIN32
-
-    // auto hdr_bg_raw_ptr = dynamic_cast<ImageTexture *>(hdr_bg.get());
-    // CRIT<<hdr_bg_raw_ptr->_image(313,217)<<std::endl;
-    // CRIT<<hdr_bg_raw_ptr->_image(50,50)<<std::endl;
-    // PixelShader ps5 = [&](const int x, const int y) -> glm::vec4
-    // {
-    //     return glm::vec4(glm::vec3(hdr_bg_raw_ptr->_image(x, y)) * 1e8f, 1.0f);
-    // };
-    // hdr_bg_raw_ptr->_image.PixelShade(ps5);
-    // hdr_bg_raw_ptr->_image.Export("/Users/tyanyuy3125/test2.exr");
 
     return 0;
 }
