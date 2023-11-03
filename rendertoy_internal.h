@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 599
-#define BUILD_DATE "2023-11-03+23:12:58"
+#define BUILD_NUMBER 605
+#define BUILD_DATE "2023-11-03+23:19:20"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -49,7 +49,7 @@ namespace rendertoy
     class Emissive;
     class Image;
     class IMaterial;
-    class IntersectInfo;
+    struct IntersectInfo;
     template <typename T = glm::vec4>
     class ISamplable;
     typedef ISamplable<glm::vec4> ISamplableColor;

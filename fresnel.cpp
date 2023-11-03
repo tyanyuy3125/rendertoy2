@@ -40,7 +40,7 @@ namespace rendertoy
         glm::vec3 etak = k / etai;
 
         float cosThetaI2 = cosThetaI * cosThetaI;
-        float sinThetaI2 = 1. - cosThetaI2;
+        float sinThetaI2 = 1.f - cosThetaI2;
         glm::vec3 eta2 = eta * eta;
         glm::vec3 etak2 = etak * etak;
 

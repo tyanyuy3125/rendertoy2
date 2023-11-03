@@ -58,7 +58,7 @@ rendertoy::AliasTable::AliasTable(std::span<float> weights)
         over.pop_back();
 
         bins[un.index].q = un.pHat;
-        bins[un.index].alias = ov.index;
+        bins[un.index].alias = static_cast<int>(ov.index);
 
         float pExcess = un.pHat + ov.pHat - 1.0f;
         if (pExcess < 1.0f)
@@ -92,8 +92,8 @@ rendertoy::AliasTable::AliasTable(std::span<float> weights)
 
 int rendertoy::AliasTable::Sample(const float u, float *pmf, float *u_remapped) const
 {
-    int offset = std::min<int>(u * bins.size(), bins.size() - 1);
-    float up = std::min<float>(u * bins.size(), ONE_MINUS_EPSILON);
+    int offset = std::min<int>(static_cast<int>(u * bins.size()), static_cast<int>(bins.size()) - 1);
+    float up = std::min<float>(u * bins.size() - offset, ONE_MINUS_EPSILON);
 
     if (up < bins[offset].q)
     {

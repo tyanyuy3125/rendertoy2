@@ -96,6 +96,7 @@ namespace rendertoy
                 break;
             }
             }
+            throw;
         }
 
         virtual const glm::vec4 Avg() const
