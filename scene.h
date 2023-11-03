@@ -3,11 +3,9 @@
 #include <memory>
 #include <vector>
 
+#include "rendertoy_internal.h"
 #include "accelerate.h"
 #include "primitive.h"
-#include "accelerate.h"
-#include "texture.h"
-#include "light.h"
 
 namespace rendertoy
 {

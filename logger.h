@@ -7,7 +7,7 @@
 #include <sstream>
 #include <ctime>
 
-#include <glm/glm.hpp>
+#include "rendertoy_internal.h"
 
 namespace rendertoy
 {

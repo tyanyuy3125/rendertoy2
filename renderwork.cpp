@@ -1,5 +1,6 @@
 #include <memory>
 
+#include "rendertoy_internal.h"
 #include "renderwork.h"
 #include "dotfont.h"
 #include "composition.h"
@@ -9,12 +10,9 @@
 #include "camera.h"
 #include "primitive.h"
 #include "scene.h"
+#include "light.h"
 
-#include <glm/glm.hpp>
 #include <chrono>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtx/norm.hpp>
-#include <glm/gtc/random.hpp>
 #include <cmath>
 
 void rendertoy::TestRenderWork::Render()

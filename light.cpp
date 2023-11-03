@@ -1,4 +1,3 @@
-#include <glm/glm.hpp>
 #include <cmath>
 
 #include "light.h"

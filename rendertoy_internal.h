@@ -2,14 +2,17 @@
 
 #include <string>
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/random.hpp>
+#include <glm/gtx/norm.hpp>
 
 #define RENDERTOY_FUNC_ARGUMENT_OUT &
 
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 568
-#define BUILD_DATE "2023-11-03+14:38:33"
+#define BUILD_NUMBER 574
+#define BUILD_DATE "2023-11-03+14:48:48"
 
 #define CLASS_METADATA_MARK(classname) \
     public: \
@@ -34,6 +37,7 @@ private:
 
 namespace rendertoy
 {
+    // Forward declarations
     class Camera;
     class Image;
     class IMaterial;
@@ -42,7 +46,9 @@ namespace rendertoy
     class ISamplable;
     typedef ISamplable<glm::vec4> ISamplableColor;
     typedef ISamplable<float> ISamplableNumerical;
+    class Light;
     class Primitive;
     class Scene;
+    class SurfaceLight;
     class TriangleMesh;
 }

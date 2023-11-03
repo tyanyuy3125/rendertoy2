@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <assimp/vector3.h>
 #include <assimp/vector2.h>
 #include <string>

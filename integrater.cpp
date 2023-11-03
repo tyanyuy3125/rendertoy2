@@ -1,7 +1,5 @@
 #include "integrater.h"
 
-#include <glm/gtc/random.hpp>
-#include <glm/gtc/constants.hpp>
 #include <cmath>
 #include <stdexcept>
 #include <algorithm>

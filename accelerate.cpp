@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
-#include <glm/gtx/norm.hpp>
 
 const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t) const
 {

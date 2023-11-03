@@ -1,8 +1,9 @@
-#include <glm/gtc/random.hpp>
 #include <memory>
 
 #include "scene.h"
 #include "material.h"
+#include "primitive.h"
+#include "light.h"
 
 void rendertoy::Scene::Init()
 {

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <memory>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "rendertoy.h"
 #include "logger.h"

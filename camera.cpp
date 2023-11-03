@@ -1,7 +1,5 @@
 #include "camera.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
 rendertoy::Camera::Camera(const glm::vec3 &origin, const glm::mat3 &rotation, const glm::float32 fov, const glm::float32 aspect_ratio)
     : _origin(origin), _rotation(rotation), _fov(fov), _aspect_ratio(aspect_ratio)
 {

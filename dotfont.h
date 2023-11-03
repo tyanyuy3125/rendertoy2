@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <string>
 
 #include "rendertoy_internal.h"

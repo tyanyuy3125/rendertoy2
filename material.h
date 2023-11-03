@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <glm/glm.hpp>
 #include <algorithm>
 
 #include "rendertoy_internal.h"
