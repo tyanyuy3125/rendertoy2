@@ -1,4 +1,5 @@
 #include "dotfont.h"
+#include "composition.h"
 
 #include <algorithm>
 

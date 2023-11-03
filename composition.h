@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 
+#include "rendertoy_internal.h"
 #include "color.h"
 
 namespace rendertoy

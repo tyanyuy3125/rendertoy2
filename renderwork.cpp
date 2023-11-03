@@ -5,6 +5,10 @@
 #include "composition.h"
 #include "material.h"
 #include "integrater.h"
+#include "texture.h"
+#include "camera.h"
+#include "primitive.h"
+#include "scene.h"
 
 #include <glm/glm.hpp>
 #include <chrono>

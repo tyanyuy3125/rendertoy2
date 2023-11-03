@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "rendertoy_internal.h"
-#include "primitive.h"
 
 namespace rendertoy
 {

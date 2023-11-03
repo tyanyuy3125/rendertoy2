@@ -2,8 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "rendertoy_internal.h"
 #include "composition.h"
-#include "importer.h"
 
 namespace rendertoy
 {
@@ -13,7 +13,7 @@ namespace rendertoy
         BILINEAR,
     };
 
-    template <typename T = glm::vec4>
+    template <typename T>
     class ISamplable
     {
     protected:
@@ -57,7 +57,7 @@ namespace rendertoy
     public:
         ImageTexture(const Image &image) : _image(image) {}
         ImageTexture(const int width, const int height) : _image(width, height) {}
-        ImageTexture(const std::string &path) : _image(ImportImageFromFile(path)) {}
+        ImageTexture(const std::string &path);
 
         virtual const glm::vec4 Sample(const float u, float v) const
         {

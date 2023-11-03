@@ -4,8 +4,6 @@
 
 #include "rendertoy_internal.h"
 #include "composition.h"
-#include "camera.h"
-#include "scene.h"
 
 namespace rendertoy
 {

@@ -9,28 +9,8 @@
 #include "texture.h"
 #include "light.h"
 
-#ifndef MATERIAL_SOCKET
-#define MATERIAL_SOCKET(name, isamplable_type)                             \
-protected:                                                                 \
-    std::shared_ptr<ISamplable##isamplable_type> _##name = default_##name; \
-                                                                           \
-public:                                                                    \
-    const std::shared_ptr<ISamplable##isamplable_type> &name() const       \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-    std::shared_ptr<ISamplable##isamplable_type> &name()                   \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-                                                                           \
-private:
-#endif
-
 namespace rendertoy
 {
-    static std::shared_ptr<ISamplableColor> default_hdr_background = std::make_shared<ColorTexture>(glm::vec4(0.1f));
-
     class Scene
     {
     private:

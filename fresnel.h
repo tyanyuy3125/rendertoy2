@@ -2,8 +2,6 @@
 
 #include "rendertoy_internal.h"
 
-#include "texture.h"
-
 // Borrowed from PBRT-v3
 
 namespace rendertoy

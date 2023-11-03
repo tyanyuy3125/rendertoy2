@@ -7,8 +7,6 @@
 
 #include "rendertoy_internal.h"
 #include "accelerate.h"
-#include "intersectinfo.h"
-// #include "light.h"
 
 namespace rendertoy
 {

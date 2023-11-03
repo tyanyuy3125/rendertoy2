@@ -5,9 +5,6 @@
 #include <memory>
 
 #include "rendertoy_internal.h"
-#include "primitive.h"
-#include "logger.h"
-#include "composition.h"
 
 namespace rendertoy
 {

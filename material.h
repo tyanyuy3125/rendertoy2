@@ -1,26 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <glm/glm.hpp>
+#include <algorithm>
 
-#include "texture.h"
-
-#ifndef MATERIAL_SOCKET
-#define MATERIAL_SOCKET(name, isamplable_type)                             \
-protected:                                                                 \
-    std::shared_ptr<ISamplable##isamplable_type> _##name = default_##name; \
-                                                                           \
-public:                                                                    \
-    const std::shared_ptr<ISamplable##isamplable_type> &name() const       \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-    std::shared_ptr<ISamplable##isamplable_type> &name()                   \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-                                                                           \
-private:
-#endif
+#include "rendertoy_internal.h"
 
 namespace rendertoy
 {
@@ -70,9 +54,6 @@ namespace rendertoy
                           -1.0f, 1.0f);
     }
 
-    static std::shared_ptr<ISamplableColor> default_albedo = std::make_shared<ColorTexture>(glm::vec4(1.0f));
-    static std::shared_ptr<ISamplableNumerical> default_strength = std::make_shared<ConstantNumerical>(1.0f);
-
     class IMaterial
     {
         MATERIAL_SOCKET(albedo, Color);
@@ -81,7 +62,7 @@ namespace rendertoy
         virtual const glm::vec3 EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, float &pdf) const = 0;
 
     public:
-        IMaterial(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
+        IMaterial(const std::shared_ptr<ISamplableColor> &albedo)
             : _albedo(albedo) {}
         /// @brief
         /// @param uv
@@ -109,7 +90,7 @@ namespace rendertoy
         virtual const glm::vec3 EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, float &pdf) const;
 
     public:
-        DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo = default_albedo, const float sigma = 0.0f)
+        DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo, const float sigma = 0.0f)
             : IMaterial(albedo)
         {
             if (sigma == 0.0f)
@@ -135,7 +116,7 @@ namespace rendertoy
         virtual const glm::vec3 EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, float &pdf) const;
 
     public:
-        Emissive(const std::shared_ptr<ISamplableColor> &albedo = default_albedo, const std::shared_ptr<ISamplableNumerical> &strength = default_strength)
+        Emissive(const std::shared_ptr<ISamplableColor> &albedo, const std::shared_ptr<ISamplableNumerical> &strength)
             : IMaterial(albedo), _strength(strength) {}
         virtual const glm::vec3 EvalEmissive(const glm::vec2 &uv) const;
         // virtual const glm::vec3 Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const;
@@ -145,7 +126,7 @@ namespace rendertoy
     class Specular : public IMaterial
     {
     public:
-        Specular(const std::shared_ptr<ISamplableColor> &albedo = default_albedo)
+        Specular(const std::shared_ptr<ISamplableColor> &albedo)
         : IMaterial(albedo) {}
     };
 

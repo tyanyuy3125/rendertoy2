@@ -4,6 +4,8 @@
 #include "importer.h"
 #include "logger.h"
 #include "composition.h"
+#include "primitive.h"
+#include "logger.h"
 
 #include <assimp/vector2.h>
 #include <assimp/vector3.h>

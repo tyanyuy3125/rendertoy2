@@ -1,5 +1,7 @@
 #include "material.h"
 #include "integrater.h"
+#include "intersectinfo.h"
+#include "texture.h"
 
 #include <glm/gtc/constants.hpp>
 
