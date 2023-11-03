@@ -11,34 +11,42 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 574
-#define BUILD_DATE "2023-11-03+14:48:48"
+#define BUILD_NUMBER 584
+#define BUILD_DATE "2023-11-03+22:37:12"
 
-#define CLASS_METADATA_MARK(classname) \
-    public: \
-        virtual const char* GetClassName() const { return #classname; } \
-    private: \
-
-#define MATERIAL_SOCKET(name, isamplable_type)                             \
-protected:                                                                 \
-    std::shared_ptr<ISamplable##isamplable_type> _##name; \
-                                                                           \
-public:                                                                    \
-    const std::shared_ptr<ISamplable##isamplable_type> &name() const       \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-    std::shared_ptr<ISamplable##isamplable_type> &name()                   \
-    {                                                                      \
-        return _##name;                                                    \
-    }                                                                      \
-                                                                           \
+#define CLASS_METADATA_MARK(classname)                              \
+public:                                                             \
+    virtual const char *GetClassName() const { return #classname; } \
+                                                                    \
 private:
+
+#define MATERIAL_SOCKET(name, isamplable_type)                       \
+protected:                                                           \
+    std::shared_ptr<ISamplable##isamplable_type> _##name;            \
+                                                                     \
+public:                                                              \
+    const std::shared_ptr<ISamplable##isamplable_type> &name() const \
+    {                                                                \
+        return _##name;                                              \
+    }                                                                \
+    std::shared_ptr<ISamplable##isamplable_type> &name()             \
+    {                                                                \
+        return _##name;                                              \
+    }                                                                \
+                                                                     \
+private:
+
+#define ONE_MINUS_EPSILON float(0x1.fffffep-1)
+
+#define FUNDAMENTAL_PRIMITIVE 0x01
+#define COMBINED_PRIMITIVE 0x02
 
 namespace rendertoy
 {
     // Forward declarations
+    class AliasTable;
     class Camera;
+    class Emissive;
     class Image;
     class IMaterial;
     class IntersectInfo;

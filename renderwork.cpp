@@ -5,7 +5,7 @@
 #include "dotfont.h"
 #include "composition.h"
 #include "material.h"
-#include "integrater.h"
+#include "sampler.h"
 #include "texture.h"
 #include "camera.h"
 #include "primitive.h"
@@ -173,11 +173,6 @@ rendertoy::AlbedoRenderWork::AlbedoRenderWork(RenderConfig render_config)
 
 void rendertoy::PathTracingRenderWork::Render()
 {
-    // 0: [1 * emissive0] + reflectance0 * RADIANCE
-    // 1: emissive0 + reflectance0 * (emissive1 + reflectance1 * RADIANCE)
-    //   =[1 * emissive0 + reflectance0 * emissive1] + reflectance0 * reflectance1 * RADIANCE
-    // 2: emissive0 + reflectance0 * (emissive1 + reflectance1 * (emissive2 + reflectance2 * RADIANCE))
-    //   =[1 * emissive0 + reflectance0 * emissive1 + reflectance0 * reflectance1 * emissive2] + reflectance0 * reflectance1 * reflectance2 * RADIANCE
     int width = _output.width();
     int height = _output.height();
     PixelShaderSSAA shader = [&](const glm::vec2 &screen_coord) -> glm::vec4
@@ -186,19 +181,32 @@ void rendertoy::PathTracingRenderWork::Render()
         for (int i = 0; i < _render_config.spp; ++i)
         {
             glm::vec3 factor = glm::vec3(1.0f);
-            glm::vec3 ret_per_iter = glm::vec3(0.0f);
+            glm::vec3 L = glm::vec3(0.0f);
             glm::vec3 origin, direction;
             IntersectInfo intersect_info;
             float pdf_next, pdf_light, pdf_scattering;
             glm::vec3 bsdf;
             _render_config.camera->SpawnRay(screen_coord, origin, direction);
-            for (int j = 0; j < 4; ++j)
+            for (int depth = 0; depth < 4; ++depth)
             {
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
                     // 更新结果亮度项
-                    ret_per_iter += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
-
+#define USE_OLD_DLS_IMPL
+#ifdef USE_OLD_DLS_IMPL
+                    L += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
+#else
+                    const glm::vec3 Le = intersect_info._mat->EvalEmissive(intersect_info._uv);
+                    if(depth == 0) // TODO: Specular
+                    {
+                        L += factor * Le;
+                    }
+                    else
+                    {
+                        auto light = intersect_info._primitive->GetSurfaceLight();
+                        
+                    }
+#endif
                     // 更新出射采样光线
                     origin = intersect_info._coord;
                     direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf);
@@ -217,9 +225,9 @@ void rendertoy::PathTracingRenderWork::Render()
                     if(glm::dot(dls_Li, dls_Li) > 1e-5)
                     {
                         mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
-                        ret_per_iter += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
+                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
                     }
-
+#ifdef USE_OLD_DLS_IMPL
                     // 在直接光源采样中，对BS(R)DF进行采样(PBRT的实现)
                     glm::vec3 dls_origin = intersect_info._coord;
                     dls_direction = intersect_info._mat->Sample(intersect_info, pdf_scattering, mat_bsdf);
@@ -228,15 +236,16 @@ void rendertoy::PathTracingRenderWork::Render()
                     {
                         if(dls_intersect_info._primitive->GetSurfaceLight() == sampled_light){
                             pdf_light = dls_intersect_info._primitive->Pdf(dls_intersect_info._coord - dls_origin, dls_intersect_info._uv);
-                            ret_per_iter += factor * PowerHeuristic(1, pdf_scattering, 1, pdf_light) * (1.0f / pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * sampled_light->_material->EvalEmissive(dls_intersect_info._uv);
+                            L += factor * PowerHeuristic(1, pdf_scattering, 1, pdf_light) * (1.0f / pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * sampled_light->_material->EvalEmissive(dls_intersect_info._uv);
                         }
                     }
+#endif // USE_OLD_DLS_IMPL
 #endif // DISABLE_DLS
                 }
                 else
                 {
                     // 光线撞击到 HDRI 背景图像 / 纯色背景等可采样管线
-                    ret_per_iter += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
+                    L += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
                     break;
                 }
 
@@ -248,7 +257,7 @@ void rendertoy::PathTracingRenderWork::Render()
                     factor *= 1.0f / p;
                 }
             }
-            ret += ret_per_iter / static_cast<float>(_render_config.spp);
+            ret += L / static_cast<float>(_render_config.spp);
         }
         return glm::vec4(ret, 1.0f) * _render_config.exposure;
     };

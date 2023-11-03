@@ -30,6 +30,8 @@ namespace rendertoy
         {
             return Sample(uv.x, uv.y);
         }
+
+        virtual const T Avg() const = 0;
     };
 
     typedef ISamplable<glm::vec4> ISamplableColor;
@@ -47,11 +49,16 @@ namespace rendertoy
         {
             return _value;
         }
+
+        virtual const float Avg() const
+        {
+            return _value;
+        }
     };
 
     class ImageTexture : public ISamplable<glm::vec4>
     {
-    public: // TODO: Temporal
+    private:
         Image _image;
 
     public:
@@ -90,6 +97,11 @@ namespace rendertoy
             }
             }
         }
+
+        virtual const glm::vec4 Avg() const
+        {
+            return _image.Avg();
+        }
     };
 
     class ColorTexture : public ISamplable<glm::vec4>
@@ -101,6 +113,11 @@ namespace rendertoy
         ColorTexture(const glm::vec4 &color) : _color(color) {}
 
         virtual const glm::vec4 Sample(const float u, const float v) const
+        {
+            return _color;
+        }
+
+        virtual const glm::vec4 Avg() const
         {
             return _color;
         }

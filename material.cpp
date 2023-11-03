@@ -1,5 +1,5 @@
 #include "material.h"
-#include "integrater.h"
+#include "sampler.h"
 #include "intersectinfo.h"
 #include "texture.h"
 

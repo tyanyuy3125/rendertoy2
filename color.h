@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "rendertoy_internal.h"
+
 namespace rendertoy
 {
     enum class ColorSpace
@@ -10,15 +12,10 @@ namespace rendertoy
         SRGB,
     };
 
-    const static std::string oiio_color_space_string[] = 
-    {
-        "Linear",
-        "sRGB"
-    };
+    const static std::string oiio_color_space_string[] =
+        {
+            "Linear",
+            "sRGB"};
 
-    template <std::size_t Sample>
-    class Spectrum
-    {
-
-    };
+    const float Luminance(const glm::vec3 &color);
 }

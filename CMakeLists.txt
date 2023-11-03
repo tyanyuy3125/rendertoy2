@@ -35,7 +35,7 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               curve.h curve.cpp
                               color.h color.cpp
                               material.h material.cpp
-                              integrater.h integrater.cpp
+                              sampler.h sampler.cpp
                               light.h light.cpp
                               fresnel.h fresnel.cpp)
 

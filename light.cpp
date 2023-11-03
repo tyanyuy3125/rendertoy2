@@ -4,6 +4,7 @@
 #include "primitive.h"
 #include "material.h"
 #include "scene.h"
+#include "texture.h"
 
 const glm::vec3 rendertoy::SurfaceLight::Sample(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const
 {
@@ -29,4 +30,9 @@ const glm::vec3 rendertoy::SurfaceLight::Sample(const Scene &scene, const Inters
     direction = glm::vec3(normalized_dir);
     // 重要：由于本项目采用了分层 BVH 结构，这里的 _material 可能不符合 _surface_primitive 存储的 _material。
     return _material->EvalEmissive(uv);
+}
+
+const float rendertoy::SurfaceLight::Phi() const
+{
+    return Luminance(glm::vec3(_material->albedo()->Avg())) * _material->strength()->Avg();
 }

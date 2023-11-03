@@ -39,6 +39,8 @@ namespace rendertoy
         const Image UpScale(const glm::float32 factor) const;
 
         friend const Image ImportImageFromFile(const std::string &path);
+
+        const glm::vec4 Avg() const;
     };
 
     enum class MixMode

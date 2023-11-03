@@ -1,4 +1,5 @@
 #include <memory>
+#include <stack>
 
 #include "scene.h"
 #include "material.h"
@@ -9,36 +10,29 @@ void rendertoy::Scene::Init()
 {
     _objects.Construct();
     _dls_lights.clear();
-    // Update _dls_lights for Direct Light Sampling.
     for (const std::shared_ptr<Primitive> object : _objects.objects)
     {
-        // TODO: 以下代码存在bug，例如对于设置为发光的 TriangleMesh，其中所有的多边形都会被强制设置为发光。
-        // REMARK: 建议在必要时对材质赋予系统进行完全重构！
-        if (typeid(*(object.get())) == typeid(TriangleMesh) && typeid(*(object->mat().get())) == typeid(Emissive))
+        std::shared_ptr<Emissive> emissive_mat = std::dynamic_pointer_cast<Emissive>(object->_mat);
+        if (!emissive_mat)
         {
-            for (const std::shared_ptr<Primitive> triangle : dynamic_cast<TriangleMesh *>(object.get())->triangles())
-            {
-                _dls_lights.push_back(std::make_shared<SurfaceLight>(triangle, object->mat()));
-                object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
-            }
+            continue;
         }
-        else if (typeid(*(object.get())) == typeid(TriangleMesh))
+
+        if (object->PRIMITIVE_TYPE() == FUNDAMENTAL_PRIMITIVE)
         {
-            for (const std::shared_ptr<Primitive> triangle : dynamic_cast<TriangleMesh *>(object.get())->triangles())
+            _dls_lights.push_back(std::make_shared<SurfaceLight>(object, emissive_mat));
+            object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
+        }
+        else // COMBINED_PRIMITIVE
+        {
+            std::shared_ptr<TriangleMesh> triangle_mesh = std::dynamic_pointer_cast<TriangleMesh>(object);
+            if (triangle_mesh)
             {
-                if (!object->mat().get() && typeid(*(triangle->mat().get())) == typeid(Emissive))
+                for (const std::shared_ptr<Triangle> &triangle : triangle_mesh->triangles())
                 {
-                    _dls_lights.push_back(std::make_shared<SurfaceLight>(triangle, triangle->mat()));
-                    object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
+                    _dls_lights.push_back(std::make_shared<SurfaceLight>(triangle, emissive_mat));
+                    triangle->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
                 }
-            }
-        }
-        else
-        {
-            if (typeid(*(object->mat().get())) == typeid(Emissive))
-            {
-                _dls_lights.push_back(std::make_shared<SurfaceLight>(object, object->mat()));
-                object->_surface_light = (SurfaceLight *)(_dls_lights[_dls_lights.size() - 1].get());
             }
         }
     }

@@ -131,6 +131,20 @@ const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) cons
     return ret;
 }
 
+const glm::vec4 rendertoy::Image::Avg() const
+{
+    glm::vec4 ret = glm::vec4(0.0f);
+    for(int x = 0; x < _width; ++x)
+    {
+        for(int y = 0; y < _height; ++y)
+        {
+            ret += (*this)(x, y);
+        }
+    }
+    ret /= static_cast<float>(_width) * static_cast<float>(_height);
+    return ret;
+}
+
 rendertoy::Canvas::Canvas(int width, int height)
     : _width(width), _height(height)
 {
