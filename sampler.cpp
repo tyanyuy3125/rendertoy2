@@ -23,7 +23,7 @@ const float rendertoy::PowerHeuristic(int nf, float f_pdf, int ng, float g_pdf)
     return (f * f) / (f * f + g * g);
 }
 
-rendertoy::AliasTable::AliasTable(std::span<const float> weights)
+rendertoy::AliasTable::AliasTable(std::span<float> weights)
     : bins(weights.size())
 {
     float sum = std::accumulate(weights.begin(), weights.end(), 0.f);

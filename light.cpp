@@ -1,4 +1,6 @@
 #include <cmath>
+#include <numeric>
+#include <span>
 
 #include "light.h"
 #include "primitive.h"
@@ -6,7 +8,7 @@
 #include "scene.h"
 #include "texture.h"
 
-const glm::vec3 rendertoy::SurfaceLight::Sample(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const
+const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const
 {
     glm::vec2 uv;
     glm::vec3 coord;
@@ -34,5 +36,21 @@ const glm::vec3 rendertoy::SurfaceLight::Sample(const Scene &scene, const Inters
 
 const float rendertoy::SurfaceLight::Phi() const
 {
-    return Luminance(glm::vec3(_material->albedo()->Avg())) * _material->strength()->Avg();
+    // We assume all lights are two sided.
+    return glm::two_pi<float>() * Luminance(glm::vec3(_material->albedo()->Avg())) * _material->strength()->Avg() * _surface_primitive->GetArea();
 }
+
+rendertoy::LightSampler::LightSampler(const std::vector<std::shared_ptr<Light> > &dls_lights)
+{
+    std::vector<float> light_power(dls_lights.size());
+    for(size_t i = 0; i < dls_lights.size(); ++i)
+    {
+        light_power[i] = dls_lights[i]->Phi();
+    }
+    if(std::accumulate(light_power.begin(), light_power.end(), 0.f) == 0.f)
+    {
+        std::fill(light_power.begin(), light_power.end(), 1.f);
+    }
+    alias_table = AliasTable(light_power);
+}
+

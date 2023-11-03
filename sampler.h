@@ -14,7 +14,8 @@ namespace rendertoy
     class AliasTable
     {
     public:
-        AliasTable(std::span<const float> weights);
+        AliasTable() {} // Undefined Behaviour.
+        AliasTable(std::span<float> weights);
 
         int Sample(const float u, float *pmf = nullptr, float *u_remapped = nullptr) const;
 

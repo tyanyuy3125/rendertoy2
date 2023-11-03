@@ -47,5 +47,5 @@ const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_in
 {
     int idx = glm::linearRand<int>(0, static_cast<int>(_dls_lights.size()) - 1);
     sampled_light = (SurfaceLight *)_dls_lights[idx].get();
-    return _dls_lights[idx]->Sample(*this, intersect_info, pdf, direction);
+    return _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction);
 }
