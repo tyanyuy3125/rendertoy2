@@ -39,10 +39,19 @@ namespace rendertoy
     class LightSampler
     {
     private:
-        std::map<Light, size_t> light_to_index;
+        // std::map<std::shared_ptr<Light>, size_t> light_to_index;
         AliasTable alias_table;
     public:
-        // float PMF
         LightSampler(const std::vector<std::shared_ptr<Light> > &dls_lights);
+
+        const int Sample(float *pmf) const
+        {
+            if(!alias_table.size())
+            {
+                return 0;
+            }
+            int ret = alias_table.Sample(glm::linearRand<float>(0.0f, 1.0f), pmf);
+            return ret;
+        }
     };
 }

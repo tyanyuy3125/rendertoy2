@@ -15,6 +15,7 @@ namespace rendertoy
         BVH<Primitive> _objects;
         std::vector<std::shared_ptr<Light>> _dls_lights;
         std::vector<std::shared_ptr<Light>> _lights;
+        std::shared_ptr<LightSampler> _light_sampler;
 
         MATERIAL_SOCKET(hdr_background, Color);
 

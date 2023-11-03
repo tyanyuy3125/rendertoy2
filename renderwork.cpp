@@ -206,7 +206,7 @@ void rendertoy::PathTracingRenderWork::Render()
                         auto light = intersect_info._primitive->GetSurfaceLight();
                         
                     }
-#endif
+#endif // USE_OLD_DLS_IMPL
                     // 更新出射采样光线
                     origin = intersect_info._coord;
                     direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf);

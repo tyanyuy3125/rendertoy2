@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 605
-#define BUILD_DATE "2023-11-03+23:19:20"
+#define BUILD_NUMBER 619
+#define BUILD_DATE "2023-11-04+00:10:29"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -55,6 +55,7 @@ namespace rendertoy
     typedef ISamplable<glm::vec4> ISamplableColor;
     typedef ISamplable<float> ISamplableNumerical;
     class Light;
+    class LightSampler;
     class Primitive;
     class Scene;
     class SurfaceLight;

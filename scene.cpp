@@ -36,6 +36,7 @@ void rendertoy::Scene::Init()
             }
         }
     }
+    _light_sampler = std::make_shared<LightSampler>(_dls_lights);
 }
 
 const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
@@ -45,7 +46,14 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 
 
 const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light) const
 {
+    float pmf;
+// #define DISABLE_POWER_LIGHT_SAMPLER
+#ifdef DISABLE_POWER_LIGHT_SAMPLER
+    pmf = 1.0f / _dls_lights.size();
     int idx = glm::linearRand<int>(0, static_cast<int>(_dls_lights.size()) - 1);
+#else
+    int idx = _light_sampler->Sample(&pmf);
+#endif // DISABLE_POWER_LIGHT_SAMPLER
     sampled_light = (SurfaceLight *)_dls_lights[idx].get();
-    return _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction);
+    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction);
 }
