@@ -114,7 +114,7 @@ namespace rendertoy
             }
             else
             {
-                constexpr int N_BUCKETS = 12;
+                constexpr int N_BUCKETS = 24;
                 BVHSplitBucket buckets[N_BUCKETS];
                 for (auto prim = begin; prim != end; ++prim)
                 {
@@ -162,7 +162,7 @@ namespace rendertoy
                 float leaf_cost = static_cast<float>(std::distance(begin, end));
                 min_cost = 1.0f / 2.0f + min_cost / overall_bbox.SurfaceArea();
 
-                if (std::distance(begin, end) > 32 || min_cost < leaf_cost)
+                if (std::distance(begin, end) > 16 || min_cost < leaf_cost)
                 {
                     mid = std::stable_partition(
                         begin, end,
