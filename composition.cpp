@@ -145,7 +145,7 @@ void rendertoy::Image::RayTrace(const RayTracingShader &shader, const int x_samp
                         {
                             ret = shader(screen_coord);
                             contribution += ret;
-// #define ENABLE_ADAPTIVE_SAMPLING
+#define ENABLE_ADAPTIVE_SAMPLING
 #ifdef ENABLE_ADAPTIVE_SAMPLING
                             float luminance_L = Luminance(ret);
                             luminance_sum += luminance_L;
@@ -154,7 +154,7 @@ void rendertoy::Image::RayTrace(const RayTracingShader &shader, const int x_samp
                             {
                                 float mu = luminance_sum / (sample_count + 1);
                                 float sigma2 = (1.0f / sample_count * (luminance2_sum - luminance_sum * luminance_sum / (sample_count + 1)));
-                                sigma2 += 1e-8;
+                                sigma2 += 1e-8f;
                                 float I = 1.96f * std::sqrt(sigma2 / (i + 1));
                                 if (I <= max_noise_tolerance * mu)
                                 {
