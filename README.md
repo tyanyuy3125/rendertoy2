@@ -10,6 +10,7 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Adaptive Sampling
 * SAH-BVH
 * MIS-DLS
+* Power Light Sampling
 * Lambertian BRDF
 * Oren-Layar BRDF
 * Fresnel

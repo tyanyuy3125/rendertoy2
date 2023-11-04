@@ -33,4 +33,26 @@ namespace rendertoy
 
         const bool sampleVisibleArea;
     };
+
+    class BeckmannDistribution : public MicrofacetDistribution
+    {
+    public:
+        static const float RoughnessToAlpha(float roughness)
+        {
+            roughness = std::max(roughness, 1e-3f);
+            float x = std::log(roughness);
+            return 1.62142f + 0.819955f * x + 0.1734f * x * x +
+                   0.0171201f * x * x * x + 0.000640711f * x * x * x * x;
+        }
+        BeckmannDistribution(float alphax, float alphay, bool samplevis = true)
+            : MicrofacetDistribution(samplevis),
+              alphax(std::max(0.001f, alphax)),
+              alphay(std::max(0.001f, alphay)) {}
+        virtual const float D(const glm::vec3 &wh) const;
+        virtual const glm::vec3 Sample_wh(const glm::vec3 &wo, const glm::vec2 &u) const;
+
+    private:
+        virtual const float Lambda(const glm::vec3 &w) const;
+        const float alphax, alphay;
+    };
 }
