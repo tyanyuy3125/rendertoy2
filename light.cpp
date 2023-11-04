@@ -34,6 +34,12 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     return _material->EvalEmissive(uv);
 }
 
+const glm::vec3 rendertoy::SurfaceLight::Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const
+{
+    pdf = _surface_primitive->Pdf(intersect_info._coord - last_origin, intersect_info._uv);
+    return _material->EvalEmissive(intersect_info._uv);
+}
+
 const float rendertoy::SurfaceLight::Phi() const
 {
     // We assume all lights are two sided.

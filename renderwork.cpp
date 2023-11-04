@@ -65,7 +65,7 @@ const rendertoy::Image rendertoy::IRenderWork::GetResult(const bool print_verbos
                                     std::string("triangles: ") + std::to_string(triangle_count),
                                     std::string("spp: ") + std::to_string(_render_config.spp),
                                     std::string("exposure: ") + std::to_string(_render_config.exposure) + std::string("s"),
-                                    std::string("gamma: " +std::to_string(_render_config.gamma))},
+                                    std::string("gamma: " + std::to_string(_render_config.gamma))},
                                    glm::vec4(1.0f), 2);
     Canvas canvas(_render_config.width, _render_config.height);
     canvas.layers().push_back(Layer(std::make_shared<Image>(_output), {0, 0}));
@@ -192,22 +192,25 @@ void rendertoy::PathTracingRenderWork::Render()
                 if (_render_config.scene->Intersect(origin, direction, intersect_info))
                 {
                     // 更新结果亮度项
-#define USE_OLD_DLS_IMPL
+// #define USE_OLD_DLS_IMPL
 #ifdef USE_OLD_DLS_IMPL
                     L += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
 #else
-                    const glm::vec3 Le = intersect_info._mat->EvalEmissive(intersect_info._uv);
-                    if(depth == 0) // TODO: Specular
+                    if (depth == 0) // TODO: Specular
                     {
-                        L += factor * Le;
+                        L += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
                     }
                     else
                     {
-                        auto light = intersect_info._primitive->GetSurfaceLight();
-                        
+                        auto surface_light = intersect_info._primitive->GetSurfaceLight();
+                        if(surface_light)
+                        {
+                            glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
+                            L += factor * PowerHeuristic(1, pdf_next, 1, pdf_light) * Le;
+                        }
                     }
 #endif // USE_OLD_DLS_IMPL
-                    // 更新出射采样光线
+       // 更新出射采样光线
                     origin = intersect_info._coord;
                     direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf);
 
@@ -222,7 +225,7 @@ void rendertoy::PathTracingRenderWork::Render()
                     SurfaceLight *sampled_light = nullptr;
                     glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light);
                     glm::vec3 mat_bsdf;
-                    if(glm::dot(dls_Li, dls_Li) > 1e-5)
+                    if (glm::dot(dls_Li, dls_Li) > 1e-5)
                     {
                         mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
                         L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
@@ -232,9 +235,10 @@ void rendertoy::PathTracingRenderWork::Render()
                     glm::vec3 dls_origin = intersect_info._coord;
                     dls_direction = intersect_info._mat->Sample(intersect_info, pdf_scattering, mat_bsdf);
                     IntersectInfo dls_intersect_info;
-                    if(_render_config.scene->Intersect(dls_origin, dls_direction, dls_intersect_info))
+                    if (_render_config.scene->Intersect(dls_origin, dls_direction, dls_intersect_info))
                     {
-                        if(dls_intersect_info._primitive->GetSurfaceLight() == sampled_light){
+                        if (dls_intersect_info._primitive->GetSurfaceLight() == sampled_light)
+                        {
                             pdf_light = dls_intersect_info._primitive->Pdf(dls_intersect_info._coord - dls_origin, dls_intersect_info._uv);
                             L += factor * PowerHeuristic(1, pdf_scattering, 1, pdf_light) * (1.0f / pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * sampled_light->_material->EvalEmissive(dls_intersect_info._uv);
                         }
@@ -273,7 +277,7 @@ void rendertoy::PathTracingRenderWork::Render()
         float d = 0.59f;
         float e = 0.14f;
         auto color = _output(x, y);
-        auto ret = glm::clamp((color*(a*color + b)) / (color*(c*color + d) + e), 0.0f, 1.0f);
+        auto ret = glm::clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0f, 1.0f);
 
         // 使用 sRGB 色调映射方法执行 linear 到 sRGB 的转换
         ret.r = ret.r <= 0.0031308f ? 12.92f * ret.r : 1.055f * glm::pow(ret.r, 1.0f / _render_config.gamma) - 0.055f;

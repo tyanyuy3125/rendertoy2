@@ -85,6 +85,10 @@ namespace rendertoy
         virtual const float GetArea() const;
         virtual const SurfaceLight *GetSurfaceLight() const;
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
+        /// @brief 在三角形上采样到(u, v)的PDF
+        /// @param observation_to_primitive 
+        /// @param uv 
+        /// @return 
         virtual const float Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const;
         virtual const glm::vec3 GetNormal(const glm::vec2 &uv) const;
     };

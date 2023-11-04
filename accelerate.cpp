@@ -19,9 +19,9 @@ const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &
     float t_enter = glm::compMax(tmin);
     float t_exit = glm::compMin(tmax);
 
-    if(t_exit >= t_enter && t_exit >= 0.0f)
+    if (t_exit >= t_enter && t_exit >= 0.0f)
     {
-        if(t_enter < 0)
+        if (t_enter < 0)
         {
             t = t_exit;
         }
@@ -44,10 +44,19 @@ const glm::vec3 rendertoy::BBox::GetCenter() const
 
 void rendertoy::BBox::Union(const BBox &a)
 {
-    for(int i=0;i<3;++i)
+    for (int i = 0; i < 3; ++i)
     {
         _pmin[i] = std::min(_pmin[i], a._pmin[i]);
-        _pmax[i] = std::max(_pmax[i], a._pmax[i]);  
+        _pmax[i] = std::max(_pmax[i], a._pmax[i]);
+    }
+}
+
+void rendertoy::BBox::Union(const glm::vec3 &p)
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        _pmin[i] = std::min(_pmin[i], p[i]);
+        _pmax[i] = std::max(_pmax[i], p[i]);
     }
 }
 
@@ -65,4 +74,27 @@ const int rendertoy::BBox::GetLongestAxis() const
         }
     }
     return ret;
+}
+
+const glm::vec3 rendertoy::BBox::Diagonal() const
+{
+    return _pmax - _pmin;
+}
+
+const float rendertoy::BBox::SurfaceArea() const
+{
+    const glm::vec3 d = Diagonal();
+    return 2.0f * (d.x * d.y + d.x * d.z + d.y * d.z);
+}
+
+const glm::vec3 rendertoy::BBox::Offset(const glm::vec3 &p) const
+{
+    glm::vec3 o = p - _pmin;
+    if (_pmax.x > _pmin.x)
+        o.x /= _pmax.x - _pmin.x;
+    if (_pmax.y > _pmin.y)
+        o.y /= _pmax.y - _pmin.y;
+    if (_pmax.z > _pmin.z)
+        o.z /= _pmax.z - _pmin.z;
+    return o;
 }
