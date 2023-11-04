@@ -117,7 +117,7 @@ namespace rendertoy
                 BVHSplitBucket buckets[N_BUCKETS];
                 for (auto prim = begin; prim != end; ++prim)
                 {
-                    int b = N_BUCKETS * centroid_bbox.Offset((*prim)->GetBoundingBox().GetCenter())[dim];
+                    int b = static_cast<int>(N_BUCKETS * centroid_bbox.Offset((*prim)->GetBoundingBox().GetCenter())[dim]);
                     if (b == N_BUCKETS)
                     {
                         b = N_BUCKETS - 1;
@@ -157,7 +157,7 @@ namespace rendertoy
                         min_cost_split_bucket = i;
                     }
                 }
-                float leaf_cost = std::distance(begin, end);
+                float leaf_cost = static_cast<float>(std::distance(begin, end));
                 min_cost = 1.0f / 2.0f + min_cost / overall_bbox.SurfaceArea();
 
                 if (min_cost < leaf_cost)
@@ -166,7 +166,7 @@ namespace rendertoy
                         begin, end,
                         [=](const std::shared_ptr<AccelerableObject> &bp)
                         {
-                            int b = N_BUCKETS * centroid_bbox.Offset(bp->GetBoundingBox().GetCenter())[dim];
+                            int b = static_cast<int>(N_BUCKETS * centroid_bbox.Offset(bp->GetBoundingBox().GetCenter())[dim]);
                             if (b == N_BUCKETS)
                             {
                                 b = N_BUCKETS - 1;
