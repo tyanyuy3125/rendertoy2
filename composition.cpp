@@ -62,15 +62,15 @@ void rendertoy::Image::PixelShade(const rendertoy::PixelShader &shader)
         }
     }
 #else
-    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int>& r) {
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int> &r)
+                      {
         for (int x = r.rows().begin(); x < r.rows().end(); ++x)
         {
             for (int y = r.cols().begin(); y < r.cols().end(); ++y)
             {
                 (*this)(x, y) = shader(x, y);
             }
-        }
-    });
+        } });
 #endif // DISABLE_PARALLEL
 }
 
@@ -78,26 +78,27 @@ void rendertoy::Image::PixelShadeSSAA(const rendertoy::PixelShaderSSAA &shader, 
 {
 // #define DISABLE_PARALLEL
 #ifdef DISABLE_PARALLEL
-        for (int x = 0; x < _width; ++x)
+    for (int x = 0; x < _width; ++x)
+    {
+        for (int y = 0; y < _height; ++y)
         {
-            for (int y = 0; y < _height; ++y)
+            glm::vec4 contribution(0.0f);
+            for (int xx = 0; xx < x_sample; ++xx)
             {
-                glm::vec4 contribution(0.0f);
-                for (int xx = 0; xx < x_sample; ++xx)
+                for (int yy = 0; yy < y_sample; ++yy)
                 {
-                    for (int yy = 0; yy < y_sample; ++yy)
-                    {
-                        glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(x_sample),
-                                            (static_cast<float>(yy) + 0.5f) / static_cast<float>(x_sample));
-                        glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(_width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(_height));
-                        contribution += shader(screen_coord);
-                    }
+                    glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(x_sample),
+                                           (static_cast<float>(yy) + 0.5f) / static_cast<float>(x_sample));
+                    glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(_width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(_height));
+                    contribution += shader(screen_coord);
                 }
-                (*this)(x, y) = contribution * (1.0f / (static_cast<float>(x_sample) * static_cast<float>(y_sample)));
             }
+            (*this)(x, y) = contribution * (1.0f / (static_cast<float>(x_sample) * static_cast<float>(y_sample)));
         }
+    }
 #else
-    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int>& r) {
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int> &r)
+                      {
         for (int x = r.rows().begin(); x < r.rows().end(); ++x)
         {
             for (int y = r.cols().begin(); y < r.cols().end(); ++y)
@@ -115,9 +116,61 @@ void rendertoy::Image::PixelShadeSSAA(const rendertoy::PixelShaderSSAA &shader, 
                 }
                 (*this)(x, y) = contribution * (1.0f / (static_cast<float>(x_sample) * static_cast<float>(y_sample)));
             }
-        }
-    });
+        } });
 #endif // DISABLE_PARALLEL
+}
+
+void rendertoy::Image::RayTrace(const RayTracingShader &shader, const int x_sample, const int y_sample, const int spp, const float max_noise_tolerance)
+{
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, _width, 0, _height), [&](const tbb::blocked_range2d<int> &r)
+                      {
+        for (int x = r.rows().begin(); x < r.rows().end(); ++x)
+        {
+            for (int y = r.cols().begin(); y < r.cols().end(); ++y)
+            {
+                glm::vec3 contribution(0.0f);
+                glm::vec3 ret(0.0f);
+                float luminance_sum = 0.0f;
+                float luminance2_sum = 0.0f;
+                int sample_count = 0;
+                for (int xx = 0; xx < x_sample; ++xx)
+                {
+                    for (int yy = 0; yy < y_sample; ++yy)
+                    {
+                        glm::vec2 pixel_offset((static_cast<float>(xx) + 0.5f) / static_cast<float>(x_sample),
+                                            (static_cast<float>(yy) + 0.5f) / static_cast<float>(x_sample));
+                        glm::vec2 screen_coord((static_cast<float>(x) + pixel_offset.x) / static_cast<float>(_width), (static_cast<float>(y) + pixel_offset.y) / static_cast<float>(_height));
+                        
+                        for (int i = 0; i < spp; ++i)
+                        {
+                            ret = shader(screen_coord);
+                            contribution += ret;
+// #define ENABLE_ADAPTIVE_SAMPLING
+#ifdef ENABLE_ADAPTIVE_SAMPLING
+                            float luminance_L = Luminance(ret);
+                            luminance_sum += luminance_L;
+                            luminance2_sum += luminance_L * luminance_L;
+                            if((sample_count + 1) % 8 == 0)
+                            {
+                                float mu = luminance_sum / (sample_count + 1);
+                                float sigma2 = (1.0f / sample_count * (luminance2_sum - luminance_sum * luminance_sum / (sample_count + 1)));
+                                sigma2 += 1e-8;
+                                float I = 1.96f * std::sqrt(sigma2 / (i + 1));
+                                if (I <= max_noise_tolerance * mu)
+                                {
+                                    ++sample_count;
+                                    goto ADAPTIVE_SAMPLING_TERMINATION;
+                                }
+                            }
+#endif // ENABLE_ADAPTIVE_SAMPLING
+                            ++sample_count;
+                        }
+                    }
+                }
+ADAPTIVE_SAMPLING_TERMINATION:
+                (*this)(x, y) = glm::vec4(contribution * (1.0f / static_cast<float>(sample_count)), 1.0f);
+            }
+        } });
 }
 
 const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const
@@ -134,9 +187,9 @@ const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) cons
 const glm::vec4 rendertoy::Image::Avg() const
 {
     glm::vec4 ret = glm::vec4(0.0f);
-    for(int x = 0; x < _width; ++x)
+    for (int x = 0; x < _width; ++x)
     {
-        for(int y = 0; y < _height; ++y)
+        for (int y = 0; y < _height; ++y)
         {
             ret += (*this)(x, y);
         }
@@ -173,16 +226,18 @@ const rendertoy::Image rendertoy::Canvas::ToImage() const
                 case MixMode::MAX:
                     ret(x, y) = glm::max(ret(x, y), layer._image->operator()(x - layer._position.x, y - layer._position.y));
                     break;
-                case MixMode::INVERT: {
+                case MixMode::INVERT:
+                {
                     auto color = layer._image->operator()(x - layer._position.x, y - layer._position.y);
-                    if(color[3] != 0.0f)
+                    if (color[3] != 0.0f)
                     {
                         ret(x, y) *= glm::vec4(-glm::vec3(1.0f), 1.0f);
                         ret(x, y) += glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
                     }
                     break;
                 }
-                case MixMode::NORMAL_CLAMP: {
+                case MixMode::NORMAL_CLAMP:
+                {
                     ret(x, y) += layer._image->operator()(x - layer._position.x, y - layer._position.y);
                     ret(x, y) = glm::clamp(ret(x, y), glm::vec4(0.0f), glm::vec4(1.0f));
                     break;

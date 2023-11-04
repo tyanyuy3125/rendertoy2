@@ -28,6 +28,7 @@ namespace rendertoy
 
         // Path tracing
         int spp = 16;
+        float max_noise_tolerance = 0.05f;
     };
 
     struct RenderStat

@@ -12,6 +12,7 @@ namespace rendertoy
 {
     typedef std::function<glm::vec4(const int, const int)> PixelShader;
     typedef std::function<glm::vec4(const glm::vec2 &)> PixelShaderSSAA;
+    typedef std::function<glm::vec3(const glm::vec2 &)> RayTracingShader;
 
     class Image
     {
@@ -35,6 +36,7 @@ namespace rendertoy
 
         void PixelShade(const PixelShader &shader);
         void PixelShadeSSAA(const PixelShaderSSAA &shader, const int x_sample, const int y_sample);
+        void RayTrace(const RayTracingShader &shader, const int x_sample, const int y_sample, const int spp, const float max_noise_tolerance);
 
         const Image UpScale(const glm::float32 factor) const;
 
