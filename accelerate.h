@@ -9,6 +9,7 @@
 
 #include "rendertoy_internal.h"
 #include "intersectinfo.h"
+#include "logger.h"
 
 namespace rendertoy
 {
@@ -20,7 +21,7 @@ namespace rendertoy
 
     public:
         BBox(glm::vec3 pmin, glm::vec3 pmax) : _pmin(pmin), _pmax(pmax) {}
-        BBox() : BBox(glm::vec3{0.0f}, glm::vec3{0.0f}) {}
+        BBox() : BBox(glm::vec3{std::numeric_limits<float>::max()}, glm::vec3{std::numeric_limits<float>::min()}) {}
         const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t) const;
         const glm::vec3 GetCenter() const;
         void Union(const BBox &a);
@@ -69,6 +70,7 @@ namespace rendertoy
     template <typename AccelerableObject, std::enable_if_t<has_bounding_box<AccelerableObject>::value, bool> _ = true>
     class BVH
     {
+    public:
     private:
         std::vector<BVHNode> node_tree;
         const int RecursiveConstruct(std::vector<std::shared_ptr<AccelerableObject>>::iterator begin, std::vector<std::shared_ptr<AccelerableObject>>::iterator end)
@@ -86,8 +88,7 @@ namespace rendertoy
             }
             auto mid = begin;
 #ifdef USE_SAH
-            int mid_idx = 0;
-            BBox centroid_bbox;
+            BBox centroid_bbox((*begin)->GetBoundingBox().GetCenter(), (*begin)->GetBoundingBox().GetCenter());
             for (auto it = begin; it != end; ++it)
             {
                 centroid_bbox.Union((*it)->GetBoundingBox().GetCenter());
@@ -128,9 +129,10 @@ namespace rendertoy
 
                 constexpr int N_SPLITS = N_BUCKETS - 1;
                 float costs[N_SPLITS] = {};
+                std::fill(&costs[0], &costs[N_SPLITS - 1], 0.0f);
 
                 int count_below = 0;
-                BBox bound_below;
+                BBox bound_below = buckets[0].bounds;
                 for (int i = 0; i < N_SPLITS; ++i)
                 {
                     bound_below.Union(buckets[i].bounds);
@@ -139,7 +141,7 @@ namespace rendertoy
                 }
 
                 int count_above = 0;
-                BBox bound_above;
+                BBox bound_above = buckets[N_SPLITS].bounds;
                 for (int i = N_SPLITS; i >= 1; --i)
                 {
                     bound_above.Union(buckets[i].bounds);
@@ -160,7 +162,7 @@ namespace rendertoy
                 float leaf_cost = static_cast<float>(std::distance(begin, end));
                 min_cost = 1.0f / 2.0f + min_cost / overall_bbox.SurfaceArea();
 
-                if (min_cost < leaf_cost)
+                if (std::distance(begin, end) > 32 || min_cost < leaf_cost)
                 {
                     mid = std::stable_partition(
                         begin, end,
