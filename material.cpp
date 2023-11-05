@@ -2,14 +2,15 @@
 #include "sampler.h"
 #include "intersectinfo.h"
 #include "texture.h"
+#include "fresnel.h"
 
 #include <glm/gtc/constants.hpp>
 
-const glm::vec3 rendertoy::DiffuseBSDF::EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, float &pdf) const
+const glm::vec3 rendertoy::DiffuseBSDF::EvalLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv, float &pdf) const
 {
     pdf = 1.0f / (2.0f * glm::pi<float>());
     if (_use_lambertian)
-        return glm::vec3(1.0f / glm::pi<float>());
+        return glm::vec3(_albedo->Sample(uv)) * glm::vec3(1.0f / glm::pi<float>());
     else
     {
         float sinThetaI = SinTheta(wi);
@@ -33,33 +34,30 @@ const glm::vec3 rendertoy::DiffuseBSDF::EvalLocal(const glm::vec3 &wi, const glm
             sinAlpha = sinThetaI;
             tanBeta = sinThetaO / AbsCosTheta(wo);
         }
-        return glm::vec3(glm::one_over_pi<float>() * (A + B * maxCos * sinAlpha * tanBeta));
+        return glm::vec3(_albedo->Sample(uv)) * glm::vec3(glm::one_over_pi<float>() * (A + B * maxCos * sinAlpha * tanBeta));
     }
 }
 
-const glm::vec3 rendertoy::DiffuseBSDF::EvalEmissive(const glm::vec2 &uv) const
+const glm::vec3 rendertoy::DiffuseBSDF::SampleLocal(const glm::vec3 &wo, const glm::vec2 &uv, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const
 {
-    return glm::vec3(0.0f);
+    flags = Diffuse;
+    const glm::vec3 wi = UniformSampleHemisphere();
+    bsdf = EvalLocal(wo, wi, uv, pdf);
+    return wi;
 }
 
-// const glm::vec3 rendertoy::DiffuseBSDF::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const
-// {
-//     pdf = 1.0f / (2.0f * glm::pi<float>());
-//     return glm::vec3(_albedo->Sample(intersect_info._uv)) * glm::vec3(1.0f / glm::pi<float>());
-// }
-
-const glm::vec3 rendertoy::DiffuseBSDF::Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const
-{
-    // In world space.
-    glm::vec3 ret = intersect_info.GenerateSurfaceCoordinates() * UniformSampleHemisphere();
-    bsdf = Eval(intersect_info, ret, pdf);
-    return ret;
-}
-
-const glm::vec3 rendertoy::Emissive::EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, float &pdf) const
+const glm::vec3 rendertoy::Emissive::EvalLocal(const glm::vec3 &wi, const glm::vec3 &wo, const glm::vec2 &uv, float &pdf) const
 {
     pdf = 1.0f / (2.0f * glm::pi<float>());
-    return glm::vec3(1.0f / glm::pi<float>());
+    return glm::vec3(_albedo->Sample(uv)) * glm::vec3(1.0f / glm::pi<float>());
+}
+
+const glm::vec3 rendertoy::Emissive::SampleLocal(const glm::vec3 &wo, const glm::vec2 &uv, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const
+{
+    flags = Diffuse;
+    const glm::vec3 wi = UniformSampleHemisphere();
+    bsdf = EvalLocal(wo, wi, uv, pdf);
+    return wi;
 }
 
 const glm::vec3 rendertoy::Emissive::EvalEmissive(const glm::vec2 &uv) const
@@ -67,23 +65,42 @@ const glm::vec3 rendertoy::Emissive::EvalEmissive(const glm::vec2 &uv) const
     return glm::vec3(_albedo->Sample(uv)) * _strength->Sample(uv);
 }
 
-// const glm::vec3 rendertoy::Emissive::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const
-// {
-//     pdf = 1.0f / (2.0f * glm::pi<float>());
-//     return glm::vec3(_albedo->Sample(intersect_info._uv)) * glm::vec3(1.0f / glm::pi<float>());
-// }
-
-const glm::vec3 rendertoy::Emissive::Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf) const
-{
-    glm::vec3 ret = intersect_info.GenerateSurfaceCoordinates() * UniformSampleHemisphere();
-    bsdf = Eval(intersect_info, ret, pdf);
-    return ret;
-}
-
-const glm::vec3 rendertoy::IMaterial::Eval(const IntersectInfo &intersect_info, const glm::vec3 &out, float &pdf) const
+const glm::vec3 rendertoy::IMaterial::Eval(const IntersectInfo &intersect_info, const glm::vec3 &wi, float &pdf) const
 {
     const glm::mat3 wtl = glm::transpose(intersect_info.GenerateSurfaceCoordinates());
-    const glm::vec3 in_local = wtl * intersect_info._in;
-    const glm::vec3 out_local = wtl * out;
-    return glm::vec3(_albedo->Sample(intersect_info._uv)) * EvalLocal(in_local, out_local, pdf);
+    const glm::vec3 wo_local = wtl * intersect_info._wo;
+    const glm::vec3 wi_local = wtl * wi;
+    return EvalLocal(wo_local, wi_local, intersect_info._uv, pdf);
+}
+
+const glm::vec3 rendertoy::IMaterial::Sample(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const
+{
+    const glm::mat3 wtl = glm::transpose(intersect_info.GenerateSurfaceCoordinates());
+    const glm::vec3 wo_local = wtl * intersect_info._wo;
+    const glm::vec3 wi_local = SampleLocal(wo_local, intersect_info._uv, pdf, bsdf, flags);
+    return glm::transpose(wtl) * wi_local;
+}
+
+const glm::vec3 rendertoy::SpecularBSDF::EvalLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv, float &pdf) const
+{
+    return glm::vec3(0.0f);
+}
+
+const glm::vec3 rendertoy::SpecularBSDF::SampleLocal(const glm::vec3 &wo, const glm::vec2 &uv, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const
+{
+    flags = Specular;
+    pdf = 1.0f;
+    const glm::vec3 wi = glm::vec3(-wo.x, -wo.y, wo.z);
+    bsdf = glm::vec3(_albedo->Sample(uv)) * _fresnel->Evaluate(CosTheta(wi)) / AbsCosTheta(wi);
+    return wi;
+}
+
+const float rendertoy::SpecularBSDF::PdfLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv) const
+{
+    return 0.0f;
+}
+
+rendertoy::SpecularBSDF::SpecularBSDF(const std::shared_ptr<ISamplableColor> &albedo)
+: IMaterial(albedo), _fresnel(std::make_shared<FresnelNoOp>())
+{
 }

@@ -10,9 +10,10 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Adaptive Sampling
 * SAH-BVH
 * MIS-DLS
-* Power Light Sampling
+* Power Light Sampling (Using alias sampling)
 * Lambertian BRDF
 * Oren-Layar BRDF
+* Specular BRDF
 * Fresnel
 * Texture Mapping (Similar to pbrt and Cycles, use `ISamplable<T>` to abstract the texture type)
 * Tone mapping

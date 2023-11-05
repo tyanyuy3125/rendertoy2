@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 722
-#define BUILD_DATE "2023-11-05+01:45:09"
+#define BUILD_NUMBER 740
+#define BUILD_DATE "2023-11-05+17:10:39"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -47,6 +47,10 @@ namespace rendertoy
     class AliasTable;
     class Camera;
     class Emissive;
+    class Fresnel;
+    class FresnelConductor;
+    class FresnelDielectric;
+    class FresnelNoOp;
     class Image;
     class IMaterial;
     struct IntersectInfo;

@@ -8,7 +8,7 @@ namespace rendertoy
 {
     struct IntersectInfo
     {
-        glm::vec3 _in;
+        glm::vec3 _wo;
         glm::vec2 _uv;
         glm::vec3 _coord;
         glm::float32 _t;

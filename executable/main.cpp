@@ -39,8 +39,9 @@ int main()
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
     std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
+    std::shared_ptr<IMaterial> mat_specular = std::make_shared<SpecularBSDF>(tex_white);
     scene->objects()[0]->mat() = mat_white;
-    scene->objects()[1]->mat() = mat_white;
+    scene->objects()[1]->mat() = mat_specular;
     scene->objects()[2]->mat() = mat_white;
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;

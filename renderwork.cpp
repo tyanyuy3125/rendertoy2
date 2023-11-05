@@ -183,65 +183,52 @@ void rendertoy::PathTracingRenderWork::Render()
         IntersectInfo intersect_info;
         float pdf_next, pdf_light, pdf_scattering;
         glm::vec3 bsdf;
+        BxDFFlags bxdf_flags = Unset;
+        bool specular_bounce = false;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
         for (int depth = 0; depth < 4; ++depth)
         {
             if (_render_config.scene->Intersect(origin, direction, intersect_info))
             {
                 // 更新结果亮度项
-// #define USE_OLD_DLS_IMPL
-#ifdef USE_OLD_DLS_IMPL
-                L += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
-#else
-                if (depth == 0) // TODO: Specular
+                auto surface_light = intersect_info._primitive->GetSurfaceLight();
+                if (surface_light)
                 {
-                    L += factor * intersect_info._mat->EvalEmissive(intersect_info._uv);
-                }
-                else
-                {
-                    auto surface_light = intersect_info._primitive->GetSurfaceLight();
-                    if (surface_light)
+                    glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
+                    if(depth == 0 || specular_bounce)
                     {
-                        glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
+                        L += factor * Le;
+                    }
+                    else
+                    {
                         L += factor * PowerHeuristic(1, pdf_next, 1, pdf_light) * Le;
                     }
                 }
-#endif // USE_OLD_DLS_IMPL
-       // 更新出射采样光线
-                origin = intersect_info._coord;
-                direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf);
 
-                // 更新因子项
-                factor = (1.0f / pdf_next) * glm::dot(direction, intersect_info._normal) * bsdf * factor;
+                // 更新 wi 采样光线，并且对当前材质的 BSDF 进行采样
+                origin = intersect_info._coord;
+                direction = intersect_info._mat->Sample(intersect_info, pdf_next, bsdf, bxdf_flags);
 
                 // 更新直接光源采样项
-// #define DISABLE_DLS
-#ifndef DISABLE_DLS
                 // 在直接光源采样中，对光源进行采样
-                glm::vec3 dls_direction;
-                SurfaceLight *sampled_light = nullptr;
-                glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light);
-                glm::vec3 mat_bsdf;
-                if (glm::dot(dls_Li, dls_Li) > 1e-5)
+                // 如果当前光线打到的表面是 SPECULAR 材质，那么以下步骤是不必要的。因为mat_bsdf = 0.
+                if (!IsSpecular(bxdf_flags))
                 {
-                    mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
-                    L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
-                }
-#ifdef USE_OLD_DLS_IMPL
-                // 在直接光源采样中，对BS(R)DF进行采样(PBRT的实现)
-                glm::vec3 dls_origin = intersect_info._coord;
-                dls_direction = intersect_info._mat->Sample(intersect_info, pdf_scattering, mat_bsdf);
-                IntersectInfo dls_intersect_info;
-                if (_render_config.scene->Intersect(dls_origin, dls_direction, dls_intersect_info))
-                {
-                    if (dls_intersect_info._primitive->GetSurfaceLight() == sampled_light)
+                    glm::vec3 dls_direction;
+                    SurfaceLight *sampled_light = nullptr;
+                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light);
+                    glm::vec3 mat_bsdf;
+                    if (glm::dot(dls_Li, dls_Li) > 1e-5f)
                     {
-                        pdf_light = dls_intersect_info._primitive->Pdf(dls_intersect_info._coord - dls_origin, dls_intersect_info._uv);
-                        L += factor * PowerHeuristic(1, pdf_scattering, 1, pdf_light) * (1.0f / pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * sampled_light->_material->EvalEmissive(dls_intersect_info._uv);
+                        mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
+                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * mat_bsdf * dls_Li;
                     }
                 }
-#endif // USE_OLD_DLS_IMPL
-#endif // DISABLE_DLS
+
+                // 更新当前表面是否为镜面
+                specular_bounce = IsSpecular(bxdf_flags);
+                // 更新因子项
+                factor = (1.0f / pdf_next) * glm::dot(direction, intersect_info._normal) * bsdf * factor;
             }
             else
             {
@@ -259,8 +246,6 @@ void rendertoy::PathTracingRenderWork::Render()
             }
         }
         return L * _render_config.exposure;
-        // return glm::vec4(glm::vec3(static_cast<float>(actual_sample_count) / static_cast<float>(_render_config.spp)), 1.0f);
-        // return glm::vec4(ret_sum / glm::vec3(static_cast<float>(actual_sample_count)), 1.0f) * _render_config.exposure;
     };
     auto start_time = std::chrono::high_resolution_clock::now();
     _output.RayTrace(shader, _render_config.x_sample, _render_config.y_sample, _render_config.spp, _render_config.max_noise_tolerance);
