@@ -127,7 +127,7 @@ namespace rendertoy
 
     class Emissive : public IMaterial
     {
-        MATERIAL_SOCKET(strength, Numerical);
+        MATERIAL_SOCKET(strength, Numerical)
         virtual const glm::vec3 EvalLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv, float &pdf) const;
         virtual const glm::vec3 SampleLocal(const glm::vec3 &wo, const glm::vec2 &uv, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const;
 
@@ -149,4 +149,32 @@ namespace rendertoy
         SpecularBSDF(const std::shared_ptr<ISamplableColor> &albedo);
     };
 
+    class MetalBSDF : public IMaterial
+    {
+        MATERIAL_SOCKET(eta, Color)
+        MATERIAL_SOCKET(k, Color)
+        MATERIAL_SOCKET(u_roughness, Numerical)
+        MATERIAL_SOCKET(v_roughness, Numerical)
+        bool _remap_roughness;
+
+        virtual const glm::vec3 EvalLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv, float &pdf) const;
+        virtual const glm::vec3 SampleLocal(const glm::vec3 &wo, const glm::vec2 &uv, float &pdf, glm::vec3 &bsdf, BxDFFlags &flags) const;
+        virtual const float PdfLocal(const glm::vec3 &wo, const glm::vec3 &wi, const glm::vec2 &uv) const;
+
+    public:
+        MetalBSDF(const std::shared_ptr<ISamplableColor> &albedo,
+                  const std::shared_ptr<ISamplableColor> &eta,
+                  const std::shared_ptr<ISamplableColor> &k,
+                  const std::shared_ptr<ISamplableNumerical> &u_roughness,
+                  const std::shared_ptr<ISamplableNumerical> &v_roughness,
+                  const bool remap_roughness)
+            : IMaterial(albedo),
+              _eta(eta),
+              _k(k),
+              _u_roughness(u_roughness),
+              _v_roughness(v_roughness),
+              _remap_roughness(remap_roughness)
+        {
+        }
+    };
 }

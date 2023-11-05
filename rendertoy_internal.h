@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 740
-#define BUILD_DATE "2023-11-05+17:10:39"
+#define BUILD_NUMBER 741
+#define BUILD_DATE "2023-11-05+17:12:37"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
