@@ -188,4 +188,31 @@ namespace rendertoy
         const float etaA, etaB;
         const std::shared_ptr<FresnelDielectric> fresnel;
     };
+
+    class FresnelSpecular : public BxDF
+    {
+    public:
+        // FresnelSpecular Public Methods
+        FresnelSpecular(const glm::vec3 &R, const glm::vec3 &T, float etaA,
+                        float etaB)
+            : BxDF(BxDFType(BSDF_REFLECTION | BSDF_TRANSMISSION | BSDF_SPECULAR)),
+              R(R),
+              T(T),
+              etaA(etaA),
+              etaB(etaB)
+        {
+        }
+        glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const
+        {
+            return glm::vec3(0.f);
+        }
+        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                           float *pdf, BxDFType *sampledType) const;
+        float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const { return 0; }
+
+    private:
+        // FresnelSpecular Private Data
+        const glm::vec3 R, T;
+        const float etaA, etaB;
+    };
 }

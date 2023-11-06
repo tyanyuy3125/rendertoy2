@@ -6,10 +6,14 @@
 
 namespace rendertoy
 {
+    float FrDielectric(float cosThetaI, float etaI, float etaT);
+    glm::vec3 FrConductor(float cosThetaI, const glm::vec3 &etai,
+                          const glm::vec3 &etat, const glm::vec3 &k);
+
     class Fresnel
     {
     public:
-        virtual ~Fresnel() {};
+        virtual ~Fresnel(){};
         virtual glm::vec3 Evaluate(float cosI) const = 0;
     };
 

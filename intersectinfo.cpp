@@ -11,7 +11,7 @@ const glm::mat3 rendertoy::IntersectInfo::GenerateSurfaceCoordinates() const
           \
            y
     */
-    glm::vec3 z = _normal;
+    glm::vec3 z = _shading_normal;
     glm::vec3 y = glm::normalize(glm::cross(z, _wo));
     if(std::abs(glm::dot(y,y)) < 1e-4f)
     {

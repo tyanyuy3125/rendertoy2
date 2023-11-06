@@ -330,3 +330,41 @@ float rendertoy::MicrofacetTransmission::Pdf(const glm::vec3 &wo, const glm::vec
         std::abs((eta * eta * glm::dot(wi, wh)) / (sqrtDenom * sqrtDenom));
     return distribution->Pdf(wo, wh) * dwh_dwi;
 }
+
+glm::vec3 rendertoy::FresnelSpecular::Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                                               float *pdf, BxDFType *sampledType) const
+{
+    float F = FrDielectric(CosTheta(wo), etaA, etaB);
+    glm::vec2 u = {glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f)};
+    if (u[0] < F)
+    {
+        // Compute specular reflection for _FresnelSpecular_
+
+        // Compute perfect specular reflection direction
+        *wi = glm::vec3(-wo.x, -wo.y, wo.z);
+        if (sampledType)
+            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_REFLECTION);
+        *pdf = F;
+        return F * R / AbsCosTheta(*wi);
+    }
+    else
+    {
+        // Compute specular transmission for _FresnelSpecular_
+
+        // Figure out which $\eta$ is incident and which is transmitted
+        bool entering = CosTheta(wo) > 0;
+        float etaI = entering ? etaA : etaB;
+        float etaT = entering ? etaB : etaA;
+
+        // Compute ray direction for specular transmission
+        if (!Refract(wo, Faceforward(glm::vec3(0.0f, 0.0f, 1.0f), wo), etaI / etaT, wi))
+            return glm::vec3(0.0f);
+        glm::vec3 ft = T * (1 - F);
+
+        // Account for non-symmetry with transmission to different medium
+        if (sampledType)
+            *sampledType = BxDFType(BSDF_SPECULAR | BSDF_TRANSMISSION);
+        *pdf = 1 - F;
+        return ft / AbsCosTheta(*wi);
+    }
+}

@@ -87,20 +87,21 @@ namespace rendertoy
         virtual const std::unique_ptr<BSDF> GetBSDF(const IntersectInfo &intersect_info) const;
     };
 
-    class GlassBSDF : public IMaterial
+    class RefractionBSDF : public IMaterial
     {
         MATERIAL_SOCKET(transmissive, Color);
         MATERIAL_SOCKET(eta, Numerical);
         MATERIAL_SOCKET(u_roughness, Numerical);
         MATERIAL_SOCKET(v_roughness, Numerical);
         bool _remap_roughness;
+
     public:
-        GlassBSDF(const std::shared_ptr<ISamplableColor> &albedo,
-                  const std::shared_ptr<ISamplableColor> &transmissive,
-                  const std::shared_ptr<ISamplableNumerical> &eta,
-                  const std::shared_ptr<ISamplableNumerical> &u_roughness = nullptr,
-                  const std::shared_ptr<ISamplableNumerical> &v_roughness = nullptr,
-                  const bool remap_roughness = true)
+        RefractionBSDF(const std::shared_ptr<ISamplableColor> &albedo,
+                       const std::shared_ptr<ISamplableColor> &transmissive,
+                       const std::shared_ptr<ISamplableNumerical> &eta,
+                       const std::shared_ptr<ISamplableNumerical> &u_roughness = nullptr,
+                       const std::shared_ptr<ISamplableNumerical> &v_roughness = nullptr,
+                       const bool remap_roughness = true)
             : IMaterial(albedo),
               _transmissive(transmissive),
               _eta(eta),
@@ -112,4 +113,5 @@ namespace rendertoy
 
         virtual const std::unique_ptr<BSDF> GetBSDF(const IntersectInfo &intersect_info) const;
     };
+
 }

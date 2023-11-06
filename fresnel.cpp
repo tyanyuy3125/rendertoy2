@@ -33,7 +33,7 @@ namespace rendertoy
 
     // https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations/
     glm::vec3 FrConductor(float cosThetaI, const glm::vec3 &etai,
-                         const glm::vec3 &etat, const glm::vec3 &k)
+                                     const glm::vec3 &etat, const glm::vec3 &k)
     {
         cosThetaI = glm::clamp(cosThetaI, -1.0f, 1.0f);
         glm::vec3 eta = etat / etai;

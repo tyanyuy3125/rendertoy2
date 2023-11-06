@@ -62,42 +62,52 @@ const std::unique_ptr<rendertoy::BSDF> rendertoy::MetalBSDF::GetBSDF(const Inter
     return bsdf;
 }
 
-const std::unique_ptr<rendertoy::BSDF> rendertoy::GlassBSDF::GetBSDF(const IntersectInfo &intersect_info) const
+const std::unique_ptr<rendertoy::BSDF> rendertoy::RefractionBSDF::GetBSDF(const IntersectInfo &intersect_info) const
 {
     const float eta = _eta->Sample(intersect_info._uv);
     std::unique_ptr<BSDF> bsdf = std::make_unique<BSDF>(intersect_info, eta);
     const glm::vec3 albedo = _albedo->Sample(intersect_info._uv);
     const glm::vec3 transmissive = _transmissive->Sample(intersect_info._uv);
     float u_roughness, v_roughness;
-    if (_u_roughness && _v_roughness)
+    if (!_u_roughness)
     {
-        u_roughness = _u_roughness->Sample(intersect_info._uv);
-        v_roughness = _v_roughness->Sample(intersect_info._uv);
-        if (u_roughness > 0.0f && v_roughness > 0.0f)
-        {
-            if (_remap_roughness)
-            {
-                u_roughness = BeckmannDistribution::RoughnessToAlpha(u_roughness);
-                v_roughness = BeckmannDistribution::RoughnessToAlpha(v_roughness);
-            }
-            auto distrib = std::make_shared<BeckmannDistribution>(u_roughness, v_roughness);
-            bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive,
-                                                               distrib,
-                                                               1.0f, eta));
-            // bsdf->Add(std::make_shared<MicrofacetReflection>(albedo,
-            //                                                  distrib,
-            //                                                  std::make_shared<FresnelDielectric>(1.0f, eta)));
-        }
-        else
-        {
-            bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
-            // bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
-        }
+        u_roughness = 0.0f;
     }
     else
     {
-        bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
-        // bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
+        u_roughness = _u_roughness->Sample(intersect_info._uv);
+    }
+    if (!_v_roughness)
+    {
+        v_roughness = 0.0f;
+    }
+    else
+    {
+        v_roughness = _v_roughness->Sample(intersect_info._uv);
+    }
+
+    if (u_roughness == 0.0f && v_roughness == 0.0f)
+    {
+        // bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
+        bsdf->Add(std::make_shared<FresnelSpecular>(albedo, transmissive, 1.0f, eta));
+    }
+    else
+    {
+        if (_remap_roughness)
+        {
+            u_roughness = BeckmannDistribution::RoughnessToAlpha(u_roughness);
+            v_roughness = BeckmannDistribution::RoughnessToAlpha(v_roughness);
+        }
+        auto distrib = std::make_shared<BeckmannDistribution>(u_roughness, v_roughness);
+        if (albedo != glm::vec3(0.0f))
+        {
+            std::shared_ptr<Fresnel> fresnel = std::make_shared<FresnelDielectric>(1.f, eta);
+            bsdf->Add(std::make_shared<MicrofacetReflection>(albedo, distrib, fresnel));
+        }
+        if (transmissive != glm::vec3(0.0f))
+        {
+            bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive, distrib, 1.f, eta));
+        }
     }
     return bsdf;
 }

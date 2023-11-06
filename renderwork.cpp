@@ -113,7 +113,7 @@ void rendertoy::NormalRenderWork::Render()
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
         if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            return glm::vec4(intersect_info._shading_normal, 1.0f);
+            return glm::vec4(intersect_info._geometry_normal, 1.0f);
         }
         return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     };
@@ -228,7 +228,7 @@ void rendertoy::PathTracingRenderWork::Render()
                     if (glm::dot(dls_Li, dls_Li) > 1e-5f)
                     {
                         dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
-                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._shading_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
+                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
                     }
                 }
 
@@ -242,7 +242,7 @@ void rendertoy::PathTracingRenderWork::Render()
                 // 更新当前表面是否为镜面
                 specular_bounce = BSDF::IsSpecular(sampled_flag);
                 // 更新因子项。在引入透射以后由于法线反转，所以需要引入abs。
-                factor = (spectrum / pdf_next) * std::abs(glm::dot(direction, intersect_info._shading_normal)) * factor;
+                factor = (spectrum / pdf_next) * std::abs(glm::dot(direction, intersect_info._geometry_normal)) * factor;
             }
             else
             {
