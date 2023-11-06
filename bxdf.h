@@ -55,11 +55,9 @@ namespace rendertoy
                         BxDFType flags = BSDF_ALL);
     };
 
-    // BxDF Declarations
     class BxDF
     {
     public:
-        // BxDF Interface
         virtual ~BxDF() {}
         BxDF(BxDFType type) : type(type) {}
         bool MatchesFlags(BxDFType t) const { return (type & t) == type; }
@@ -68,27 +66,23 @@ namespace rendertoy
                                    float *pdf, BxDFType *sampledType = nullptr) const;
         virtual float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
-        // BxDF Public Data
         const BxDFType type;
     };
 
     class LambertianReflection : public BxDF
     {
     public:
-        // LambertianReflection Public Methods
         LambertianReflection(const glm::vec3 &R)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), R(R) {}
         glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
     private:
-        // LambertianReflection Private Data
         const glm::vec3 R;
     };
 
     class OrenNayar : public BxDF
     {
     public:
-        // OrenNayar Public Methods
         glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const;
         OrenNayar(const glm::vec3 &R, float sigma)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), R(R)
@@ -100,7 +94,6 @@ namespace rendertoy
         }
 
     private:
-        // OrenNayar Private Data
         const glm::vec3 R;
         float A, B;
     };
@@ -108,7 +101,6 @@ namespace rendertoy
     class SpecularReflection : public BxDF
     {
     public:
-        // SpecularReflection Public Methods
         SpecularReflection(const glm::vec3 &R, std::shared_ptr<Fresnel> fresnel)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_SPECULAR)),
               R(R),
@@ -122,7 +114,6 @@ namespace rendertoy
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const { return 0.0f; }
 
     private:
-        // SpecularReflection Private Data
         const glm::vec3 R;
         const std::shared_ptr<Fresnel> fresnel;
     };
@@ -130,7 +121,6 @@ namespace rendertoy
     class MicrofacetReflection : public BxDF
     {
     public:
-        // MicrofacetReflection Public Methods
         MicrofacetReflection(const glm::vec3 &R,
                              std::shared_ptr<MicrofacetDistribution> distribution, std::shared_ptr<Fresnel> fresnel)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_GLOSSY)),
@@ -143,7 +133,6 @@ namespace rendertoy
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
     private:
-        // MicrofacetReflection Private Data
         const glm::vec3 R;
         const std::shared_ptr<MicrofacetDistribution> distribution;
         const std::shared_ptr<Fresnel> fresnel;
@@ -152,7 +141,6 @@ namespace rendertoy
     class SpecularTransmission : public BxDF
     {
     public:
-        // SpecularTransmission Public Methods
         SpecularTransmission(const glm::vec3 &T, float etaA, float etaB);
         glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const
         {
@@ -163,7 +151,6 @@ namespace rendertoy
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const { return 0.0f; }
 
     private:
-        // SpecularTransmission Private Data
         const glm::vec3 T;
         const float etaA, etaB;
         const std::shared_ptr<FresnelDielectric> fresnel;
@@ -172,7 +159,6 @@ namespace rendertoy
     class MicrofacetTransmission : public BxDF
     {
     public:
-        // MicrofacetTransmission Public Methods
         MicrofacetTransmission(const glm::vec3 &T,
                                std::shared_ptr<MicrofacetDistribution> distribution, float etaA,
                                float etaB);
@@ -182,7 +168,6 @@ namespace rendertoy
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
     private:
-        // MicrofacetTransmission Private Data
         const glm::vec3 T;
         const std::shared_ptr<MicrofacetDistribution> distribution;
         const float etaA, etaB;
@@ -192,7 +177,6 @@ namespace rendertoy
     class FresnelSpecular : public BxDF
     {
     public:
-        // FresnelSpecular Public Methods
         FresnelSpecular(const glm::vec3 &R, const glm::vec3 &T, float etaA,
                         float etaB)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_TRANSMISSION | BSDF_SPECULAR)),
@@ -211,8 +195,27 @@ namespace rendertoy
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const { return 0; }
 
     private:
-        // FresnelSpecular Private Data
         const glm::vec3 R, T;
         const float etaA, etaB;
+    };
+
+    class LambertianTransmission : public BxDF
+    {
+    public:
+        LambertianTransmission(const glm::vec3 &T)
+            : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_DIFFUSE)), T(T) {}
+        glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const
+        {
+            return T * glm::one_over_pi<float>();
+        }
+        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                          float *pdf, BxDFType *sampledType) const;
+        float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const
+        {
+            return !SameHemisphere(wo, wi) ? AbsCosTheta(wi) * glm::one_over_pi<float>() : 0.0f;
+        }
+
+    private:
+        glm::vec3 T;
     };
 }

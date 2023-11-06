@@ -3,6 +3,7 @@
 
 #include "rendertoy.h"
 #include "logger.h"
+#include "principled.h"
 
 using namespace rendertoy;
 
@@ -32,6 +33,7 @@ int main()
     // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
 
     std::shared_ptr<ISamplableColor> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
+    std::shared_ptr<ISamplableColor> tex_black = std::make_shared<ColorTexture>(glm::vec4{0.0f});
     std::shared_ptr<ISamplableColor> tex_R = std::make_shared<ColorTexture>(glm::vec4{0.3f});
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -50,10 +52,26 @@ int main()
     std::shared_ptr<IMaterial> mat_glass = std::make_shared<RefractionBSDF>(tex_R, tex_white, water_eta);
     std::shared_ptr<ISamplableNumerical> glass_roughness = std::make_shared<ConstantNumerical>(0.0001f);
     std::shared_ptr<IMaterial> mat_frosted_glass = std::make_shared<RefractionBSDF>(tex_white, tex_white, water_eta, glass_roughness, glass_roughness);
+    std::shared_ptr<IMaterial> mat_principled = std::make_shared<PrincipledBSDF>(
+        tex_white,
+        std::make_shared<ConstantNumerical>(0.5f),
+        std::make_shared<ConstantNumerical>(1.450f),
+        std::make_shared<ConstantNumerical>(0.1f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.5f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.030f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        false,
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.0f)
+    );
     // std::shared_ptr<IMaterial> mat_metal;
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_white;
-    scene->objects()[2]->mat() = mat_glass;
+    scene->objects()[2]->mat() = mat_principled;
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;
     scene->objects()[5]->mat() = mat_green;
@@ -80,7 +98,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 96;
+    conf.spp = 4;
     conf.gamma = 2.4f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

@@ -170,7 +170,8 @@ void rendertoy::Image::RayTrace(const RayTracingShader &shader, const int x_samp
 ADAPTIVE_SAMPLING_TERMINATION:
                 (*this)(x, y) = glm::vec4(contribution * (1.0f / static_cast<float>(sample_count)), 1.0f);
             }
-        } });
+        }
+    });
 }
 
 const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) const

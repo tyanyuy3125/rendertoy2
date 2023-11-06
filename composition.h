@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <atomic>
 
 #include "rendertoy_internal.h"
 #include "color.h"

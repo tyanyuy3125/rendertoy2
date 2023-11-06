@@ -368,3 +368,12 @@ glm::vec3 rendertoy::FresnelSpecular::Sample_f(const glm::vec3 &wo, glm::vec3 *w
         return ft / AbsCosTheta(*wi);
     }
 }
+
+glm::vec3 rendertoy::LambertianTransmission::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampledType) const
+{
+    *wi = CosineSampleHemisphere();
+    if (wo.z > 0)
+        wi->z *= -1;
+    *pdf = Pdf(wo, *wi);
+    return f(wo, *wi);
+}

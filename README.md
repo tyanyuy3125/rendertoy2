@@ -7,6 +7,7 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 ## Implemented
 
 * BSDF Path Tracing
+* Principled BSDF
 * Adaptive Sampling
 * SAH-BVH
 * MIS-DLS
@@ -24,8 +25,6 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Bitmap font watermark
 
 ## Not yet implemented
-* More BSDFs
-* Depth of field
 * ...
 
 ## May be implemented
