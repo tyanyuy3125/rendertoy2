@@ -4,6 +4,18 @@
 #include "fresnel.h"
 #include "microfacet.h"
 
+bool rendertoy::BSDF::IsTransmissive() const
+{
+    for (int i = 0; i < MaxBxDFs; ++i)
+    {
+        if (bxdfs[i]->type & BSDF_TRANSMISSION)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 glm::vec3 rendertoy::BxDF::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampled_type) const
 {
     // Cosine-sample the hemisphere, flipping the direction if necessary
@@ -195,8 +207,9 @@ glm::vec3 rendertoy::MicrofacetReflection::f(const glm::vec3 &wo, const glm::vec
            (4.0f * cosThetaI * cosThetaO);
 }
 
-glm::vec3 rendertoy::MicrofacetReflection::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, const glm::vec2 &u, float *pdf, BxDFType *sampledType) const
+glm::vec3 rendertoy::MicrofacetReflection::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampledType) const
 {
+    glm::vec2 u = {glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f)};
     // Sample microfacet orientation $\wh$ and reflected direction $\wi$
     if (wo.z == 0)
         return glm::vec3(0.0f);
@@ -218,4 +231,101 @@ float rendertoy::MicrofacetReflection::Pdf(const glm::vec3 &wo, const glm::vec3 
         return 0;
     glm::vec3 wh = glm::normalize(wo + wi);
     return distribution->Pdf(wo, wh) / (4 * glm::dot(wo, wh));
+}
+
+rendertoy::SpecularTransmission::SpecularTransmission(const glm::vec3 &T, float etaA, float etaB)
+    : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_SPECULAR)),
+      T(T),
+      etaA(etaA),
+      etaB(etaB),
+      fresnel(std::make_shared<FresnelDielectric>(etaA, etaB))
+{
+}
+
+glm::vec3 rendertoy::SpecularTransmission::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampledType) const
+{
+    // Figure out which $\eta$ is incident and which is transmitted
+    bool entering = CosTheta(wo) > 0;
+    float etaI = entering ? etaA : etaB;
+    float etaT = entering ? etaB : etaA;
+
+    // Compute ray direction for specular transmission
+    if (!Refract(wo, Faceforward(glm::vec3(0.0f, 0.0f, 1.0f), wo), etaI / etaT, wi))
+        return glm::vec3(0.0f);
+    *pdf = 1;
+    glm::vec3 ft = T * (glm::vec3(1.) - fresnel->Evaluate(CosTheta(*wi)));
+    return ft / AbsCosTheta(*wi);
+}
+
+rendertoy::MicrofacetTransmission::MicrofacetTransmission(const glm::vec3 &T, std::shared_ptr<MicrofacetDistribution> distribution, float etaA, float etaB)
+    : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_GLOSSY)),
+      T(T),
+      distribution(distribution),
+      etaA(etaA),
+      etaB(etaB),
+      fresnel(std::make_shared<FresnelDielectric>(etaA, etaB)) {}
+
+glm::vec3 rendertoy::MicrofacetTransmission::f(const glm::vec3 &wo, const glm::vec3 &wi) const
+{
+    if (SameHemisphere(wo, wi))
+        return glm::vec3(0.0f); // transmission only
+
+    float cosThetaO = CosTheta(wo);
+    float cosThetaI = CosTheta(wi);
+    if (cosThetaI == 0 || cosThetaO == 0)
+        return glm::vec3(0);
+
+    // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
+    float eta = CosTheta(wo) > 0 ? (etaB / etaA) : (etaA / etaB);
+    glm::vec3 wh = glm::normalize(wo + wi * eta);
+    if (wh.z < 0)
+        wh = -wh;
+
+    // Same side?
+    if (glm::dot(wo, wh) * glm::dot(wi, wh) > 0)
+        return glm::vec3(0);
+
+    glm::vec3 F = fresnel->Evaluate(glm::dot(wo, wh));
+
+    float sqrtDenom = glm::dot(wo, wh) + eta * glm::dot(wi, wh);
+    float factor = 1.0f / eta;
+
+    return (glm::vec3(1.f) - F) * T *
+           std::abs(distribution->D(wh) * distribution->G(wo, wi) * eta * eta *
+                    std::abs(glm::dot(wi, wh)) * std::abs(glm::dot(wo, wh)) * factor * factor /
+                    (cosThetaI * cosThetaO * sqrtDenom * sqrtDenom));
+}
+
+glm::vec3 rendertoy::MicrofacetTransmission::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampledType) const
+{
+    glm::vec2 u{glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f)};
+    if (wo.z == 0)
+        return glm::vec3(0.0f);
+    glm::vec3 wh = distribution->Sample_wh(wo, u);
+    if (glm::dot(wo, wh) < 0)
+        return glm::vec3(0.0f); // Should be rare
+
+    float eta = CosTheta(wo) > 0 ? (etaA / etaB) : (etaB / etaA);
+    if (!Refract(wo, wh, eta, wi))
+        return glm::vec3(0.0f);
+    *pdf = Pdf(wo, *wi);
+    return f(wo, *wi);
+}
+
+float rendertoy::MicrofacetTransmission::Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const
+{
+    if (SameHemisphere(wo, wi))
+        return 0;
+    // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
+    float eta = CosTheta(wo) > 0 ? (etaB / etaA) : (etaA / etaB);
+    glm::vec3 wh = glm::normalize(wo + wi * eta);
+
+    if (glm::dot(wo, wh) * glm::dot(wi, wh) > 0)
+        return 0;
+
+    // Compute change of variables _dwh\_dwi_ for microfacet transmission
+    float sqrtDenom = glm::dot(wo, wh) + eta * glm::dot(wi, wh);
+    float dwh_dwi =
+        std::abs((eta * eta * glm::dot(wi, wh)) / (sqrtDenom * sqrtDenom));
+    return distribution->Pdf(wo, wh) * dwh_dwi;
 }

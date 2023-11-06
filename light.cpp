@@ -8,7 +8,7 @@
 #include "scene.h"
 #include "texture.h"
 
-const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const
+const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal) const
 {
     glm::vec2 uv;
     glm::vec3 coord;
@@ -17,7 +17,7 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     _surface_primitive->GenerateSamplePointOnSurface(uv, coord, light_normal);
     dir = coord - intersect_info._coord;
     float projected_area = std::abs(glm::dot(light_normal, dir) * _surface_primitive->GetArea());
-    if(glm::dot(dir, intersect_info._normal) < 0.0f || std::abs(projected_area) < 1e-4)
+    if((consider_normal && glm::dot(dir, intersect_info._normal) < 0.0f) || std::abs(projected_area) < 1e-4)
     {
         return glm::vec3(0.0f);
     }

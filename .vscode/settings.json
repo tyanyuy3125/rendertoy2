@@ -109,6 +109,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "numbers": "cpp",
+        "cinttypes": "cpp"
     }
 }

@@ -187,17 +187,18 @@ void rendertoy::PathTracingRenderWork::Render()
         float pdf_next, pdf_light, pdf_scattering;
         bool specular_bounce = false;
         float eta = 1.0f;
+        float eta_scale = 1.0f;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
         for (int depth = 0; depth < 4; ++depth)
         {
             if (_render_config.scene->Intersect(origin, direction, intersect_info))
             {
-                // 更新结果亮度项
+                // 如果当前表面是发光表面，则进行直接光源采样的BSDF采样或者亮度项计算
                 auto surface_light = intersect_info._primitive->GetSurfaceLight();
                 if (surface_light)
                 {
                     glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
-                    if(depth == 0 || specular_bounce)
+                    if (depth == 0 || specular_bounce)
                     {
                         L += factor * Le;
                     }
@@ -217,24 +218,36 @@ void rendertoy::PathTracingRenderWork::Render()
                 // 更新直接光源采样项
                 // 在直接光源采样中，对光源进行采样
                 // 如果当前光线打到的表面是 SPECULAR 材质，那么以下步骤是不必要的。因为mat_bsdf = 0.
-                if (!BSDF::IsSpecular(sampled_flag))
+                if (bsdf->NumComponents(BxDFType(BSDF_ALL & ~BSDF_REFLECTION)) > 0)
                 {
+                    // bool consider_normal = !bsdf->IsTransmissive();
+                    bool consider_normal = true;
                     glm::vec3 dls_direction;
                     SurfaceLight *sampled_light = nullptr;
-                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light);
+                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light, consider_normal);
                     glm::vec3 dls_mat_spectrum;
                     if (glm::dot(dls_Li, dls_Li) > 1e-5f)
                     {
                         dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
-                        // mat_bsdf = intersect_info._mat->Eval(intersect_info, dls_direction, pdf_scattering);
-                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * (1.0f / pdf_light) * glm::dot(dls_direction, intersect_info._normal) * dls_mat_spectrum * dls_Li;
+                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * glm::dot(dls_direction, intersect_info._normal) * dls_mat_spectrum * dls_Li / pdf_light;
                     }
+                }
+
+                // 在引入微表面采样以后，由于不再采用均匀半球或者余弦采样方法，所以可能会导致采到概率密度为0的部分，需要将其剔除。
+                // 如果不进行下述剔除，可能由于数值计算误差产生Inf点或者NaN点。
+                if (spectrum == glm::zero<glm::vec3>() || pdf_next == 0.0f)
+                {
+                    break;
                 }
 
                 // 更新当前表面是否为镜面
                 specular_bounce = BSDF::IsSpecular(sampled_flag);
-                // 更新因子项
-                factor = (1.0f / pdf_next) * glm::dot(direction, intersect_info._normal) * spectrum * factor;
+                if (sampled_flag & BSDF_TRANSMISSION)
+                {
+                    eta_scale *= std::sqrt(bsdf->_eta);
+                }
+                // 更新因子项。在引入透射以后由于法线反转，所以需要引入abs。
+                factor = (spectrum / pdf_next) * std::abs(glm::dot(direction, intersect_info._normal)) * factor;
             }
             else
             {
@@ -250,6 +263,14 @@ void rendertoy::PathTracingRenderWork::Render()
                     break;
                 factor *= 1.0f / p;
             }
+            // glm::vec3 rr_beta = factor * eta_scale;
+            // if (glm::compMax(rr_beta) < 1.0f && depth > 1)
+            // {
+            //     float q = std::max(0.0f, 1.0f - glm::compMax(rr_beta));
+            //     if (glm::linearRand(0.0f, 1.0f) < q)
+            //         break;
+            //     factor /= 1.0f - q;
+            // }
         }
         return L * _render_config.exposure;
     };

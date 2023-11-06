@@ -6,6 +6,7 @@ namespace rendertoy
 {
     enum BxDFType
     {
+        BSDF_NONE = 0,
         BSDF_REFLECTION = 1 << 0,
         BSDF_TRANSMISSION = 1 << 1,
         BSDF_DIFFUSE = 1 << 2,
@@ -18,18 +19,19 @@ namespace rendertoy
     class BSDF
     {
         const glm::mat3 _ltw;
-        const float _eta;
         int nBxDFs = 0;
         static const int MaxBxDFs = 8;
         std::shared_ptr<BxDF> bxdfs[MaxBxDFs];
 
     public:
+        const float _eta;
         BSDF() = delete;
         BSDF(const IntersectInfo &intersect_info, float eta = 1.0f);
         static bool IsSpecular(const BxDFType bxdf_type)
         {
             return bxdf_type & BSDF_SPECULAR;
         }
+        bool IsTransmissive() const;
         void Add(const std::shared_ptr<BxDF> &b)
         {
             bxdfs[nBxDFs++] = b;
@@ -63,12 +65,7 @@ namespace rendertoy
         bool MatchesFlags(BxDFType t) const { return (type & t) == type; }
         virtual glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const = 0;
         virtual glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
-                                   float *pdf,
-                                   BxDFType *sampledType = nullptr) const;
-        // virtual glm::vec3 rho(const glm::vec3 &wo, int nSamples,
-        //                       const glm::vec2 *samples) const;
-        // virtual glm::vec3 rho(int nSamples, const glm::vec2 *samples1,
-        //                       const glm::vec2 *samples2) const;
+                                   float *pdf, BxDFType *sampledType = nullptr) const;
         virtual float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
         // BxDF Public Data
@@ -82,8 +79,6 @@ namespace rendertoy
         LambertianReflection(const glm::vec3 &R)
             : BxDF(BxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), R(R) {}
         glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const;
-        // glm::vec3 rho(const glm::vec3 &, int, const glm::vec2 *) const { return R; }
-        // glm::vec3 rho(int, const glm::vec2 *, const glm::vec2 *) const { return R; }
 
     private:
         // LambertianReflection Private Data
@@ -143,8 +138,8 @@ namespace rendertoy
               distribution(distribution),
               fresnel(fresnel) {}
         glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const;
-        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi, const glm::vec2 &u,
-                           float *pdf, BxDFType *sampledType) const;
+        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                           float *pdf, BxDFType *sampledType = nullptr) const;
         float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
 
     private:
@@ -152,5 +147,45 @@ namespace rendertoy
         const glm::vec3 R;
         const std::shared_ptr<MicrofacetDistribution> distribution;
         const std::shared_ptr<Fresnel> fresnel;
+    };
+
+    class SpecularTransmission : public BxDF
+    {
+    public:
+        // SpecularTransmission Public Methods
+        SpecularTransmission(const glm::vec3 &T, float etaA, float etaB);
+        glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const
+        {
+            return glm::vec3(0.f);
+        }
+        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                           float *pdf, BxDFType *sampledType = nullptr) const;
+        float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const { return 0.0f; }
+
+    private:
+        // SpecularTransmission Private Data
+        const glm::vec3 T;
+        const float etaA, etaB;
+        const std::shared_ptr<FresnelDielectric> fresnel;
+    };
+
+    class MicrofacetTransmission : public BxDF
+    {
+    public:
+        // MicrofacetTransmission Public Methods
+        MicrofacetTransmission(const glm::vec3 &T,
+                               std::shared_ptr<MicrofacetDistribution> distribution, float etaA,
+                               float etaB);
+        glm::vec3 f(const glm::vec3 &wo, const glm::vec3 &wi) const;
+        glm::vec3 Sample_f(const glm::vec3 &wo, glm::vec3 *wi,
+                           float *pdf, BxDFType *sampledType) const;
+        float Pdf(const glm::vec3 &wo, const glm::vec3 &wi) const;
+
+    private:
+        // MicrofacetTransmission Private Data
+        const glm::vec3 T;
+        const std::shared_ptr<MicrofacetDistribution> distribution;
+        const float etaA, etaB;
+        const std::shared_ptr<FresnelDielectric> fresnel;
     };
 }

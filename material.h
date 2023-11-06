@@ -34,7 +34,8 @@ namespace rendertoy
     public:
         DiffuseBSDF(const std::shared_ptr<ISamplableColor> &albedo, const std::shared_ptr<ISamplableNumerical> &sigma)
             : IMaterial(albedo), _sigma(sigma)
-        {}
+        {
+        }
 
         virtual const std::unique_ptr<BSDF> GetBSDF(const IntersectInfo &intersect_info) const;
     };
@@ -55,27 +56,54 @@ namespace rendertoy
     public:
         SpecularBSDF(const std::shared_ptr<ISamplableColor> &albedo)
             : IMaterial(albedo) {}
-        
+
         virtual const std::unique_ptr<BSDF> GetBSDF(const IntersectInfo &intersect_info) const;
     };
 
     class MetalBSDF : public IMaterial
     {
-        MATERIAL_SOCKET(eta, Color)
-        MATERIAL_SOCKET(k, Color)
-        MATERIAL_SOCKET(u_roughness, Numerical)
-        MATERIAL_SOCKET(v_roughness, Numerical)
+        MATERIAL_SOCKET(eta, Color);
+        MATERIAL_SOCKET(k, Color);
+        MATERIAL_SOCKET(u_roughness, Numerical);
+        MATERIAL_SOCKET(v_roughness, Numerical);
         bool _remap_roughness;
+
     public:
         MetalBSDF(const std::shared_ptr<ISamplableColor> &albedo,
                   const std::shared_ptr<ISamplableColor> &eta,
                   const std::shared_ptr<ISamplableColor> &k,
                   const std::shared_ptr<ISamplableNumerical> &u_roughness,
                   const std::shared_ptr<ISamplableNumerical> &v_roughness,
-                  const bool remap_roughness)
+                  const bool remap_roughness = true)
             : IMaterial(albedo),
               _eta(eta),
               _k(k),
+              _u_roughness(u_roughness),
+              _v_roughness(v_roughness),
+              _remap_roughness(remap_roughness)
+        {
+        }
+
+        virtual const std::unique_ptr<BSDF> GetBSDF(const IntersectInfo &intersect_info) const;
+    };
+
+    class GlassBSDF : public IMaterial
+    {
+        MATERIAL_SOCKET(transmissive, Color);
+        MATERIAL_SOCKET(eta, Numerical);
+        MATERIAL_SOCKET(u_roughness, Numerical);
+        MATERIAL_SOCKET(v_roughness, Numerical);
+        bool _remap_roughness;
+    public:
+        GlassBSDF(const std::shared_ptr<ISamplableColor> &albedo,
+                  const std::shared_ptr<ISamplableColor> &transmissive,
+                  const std::shared_ptr<ISamplableNumerical> &eta,
+                  const std::shared_ptr<ISamplableNumerical> &u_roughness = nullptr,
+                  const std::shared_ptr<ISamplableNumerical> &v_roughness = nullptr,
+                  const bool remap_roughness = true)
+            : IMaterial(albedo),
+              _transmissive(transmissive),
+              _eta(eta),
               _u_roughness(u_roughness),
               _v_roughness(v_roughness),
               _remap_roughness(remap_roughness)

@@ -52,12 +52,52 @@ const std::unique_ptr<rendertoy::BSDF> rendertoy::MetalBSDF::GetBSDF(const Inter
     const glm::vec3 k = _k->Sample(intersect_info._uv);
     float u_roughness = _u_roughness->Sample(intersect_info._uv);
     float v_roughness = _v_roughness->Sample(intersect_info._uv);
-    if(_remap_roughness)
+    if (_remap_roughness)
     {
         u_roughness = BeckmannDistribution::RoughnessToAlpha(u_roughness);
         v_roughness = BeckmannDistribution::RoughnessToAlpha(v_roughness);
     }
     std::unique_ptr<BSDF> bsdf = std::make_unique<BSDF>(intersect_info);
     bsdf->Add(std::make_shared<MicrofacetReflection>(albedo, std::make_shared<BeckmannDistribution>(u_roughness, v_roughness), std::make_shared<FresnelConductor>(glm::vec3(1.0f), eta, k)));
+    return bsdf;
+}
+
+const std::unique_ptr<rendertoy::BSDF> rendertoy::GlassBSDF::GetBSDF(const IntersectInfo &intersect_info) const
+{
+    const float eta = _eta->Sample(intersect_info._uv);
+    std::unique_ptr<BSDF> bsdf = std::make_unique<BSDF>(intersect_info, eta);
+    const glm::vec3 albedo = _albedo->Sample(intersect_info._uv);
+    const glm::vec3 transmissive = _transmissive->Sample(intersect_info._uv);
+    float u_roughness, v_roughness;
+    if (_u_roughness && _v_roughness)
+    {
+        u_roughness = _u_roughness->Sample(intersect_info._uv);
+        v_roughness = _v_roughness->Sample(intersect_info._uv);
+        if (u_roughness > 0.0f && v_roughness > 0.0f)
+        {
+            if (_remap_roughness)
+            {
+                u_roughness = BeckmannDistribution::RoughnessToAlpha(u_roughness);
+                v_roughness = BeckmannDistribution::RoughnessToAlpha(v_roughness);
+            }
+            auto distrib = std::make_shared<BeckmannDistribution>(u_roughness, v_roughness);
+            bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive,
+                                                               distrib,
+                                                               1.0f, eta));
+            bsdf->Add(std::make_shared<MicrofacetReflection>(albedo,
+                                                             distrib,
+                                                             std::make_shared<FresnelDielectric>(1.0f, eta)));
+        }
+        else
+        {
+            bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
+            bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
+        }
+    }
+    else
+    {
+        bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
+        bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
+    }
     return bsdf;
 }

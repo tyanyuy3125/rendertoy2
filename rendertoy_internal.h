@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 751
-#define BUILD_DATE "2023-11-06+12:21:12"
+#define BUILD_NUMBER 834
+#define BUILD_DATE "2023-11-06+18:43:51"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -189,11 +189,29 @@ namespace rendertoy
         return w.z * wp.z > 0;
     }
 
-    inline glm::vec3 Faceforward(const glm::vec3 &v, const glm::vec3 &v2) {
+    inline glm::vec3 Faceforward(const glm::vec3 &v, const glm::vec3 &v2)
+    {
         return (glm::dot(v, v2) < 0.f) ? -v : v;
     }
 
-    inline glm::vec3 Reflect(const glm::vec3 &wo, const glm::vec3 &n) {
+    inline glm::vec3 Reflect(const glm::vec3 &wo, const glm::vec3 &n)
+    {
         return -wo + 2 * glm::dot(wo, n) * n;
+    }
+
+    inline bool Refract(const glm::vec3 &wi, const glm::vec3 &n, float eta,
+                        glm::vec3 *wt)
+    {
+        // Compute $\cos \theta_\roman{t}$ using Snell's law
+        float cosThetaI = glm::dot(n, wi);
+        float sin2ThetaI = std::max(0.0f, 1.0f - cosThetaI * cosThetaI);
+        float sin2ThetaT = eta * eta * sin2ThetaI;
+
+        // Handle total internal reflection for transmission
+        if (sin2ThetaT >= 1.0f)
+            return false;
+        float cosThetaT = std::sqrt(1.0f - sin2ThetaT);
+        *wt = eta * -wi + (eta * cosThetaI - cosThetaT) * glm::vec3(n);
+        return true;
     }
 }

@@ -18,7 +18,7 @@ namespace rendertoy
         /// @param intersect_info 
         /// @param pdf 
         /// @return Radiance contribution.
-        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const = 0;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal = true) const = 0;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const = 0;
         virtual const float Phi() const = 0;
     };
@@ -32,7 +32,7 @@ namespace rendertoy
     public:
         SurfaceLight() = delete;
         SurfaceLight(std::shared_ptr<Primitive> surface_primitive, std::shared_ptr<Emissive> material) : _surface_primitive(surface_primitive), _material(material) {}
-        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal = true) const;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const;
 
         virtual const float Phi() const;

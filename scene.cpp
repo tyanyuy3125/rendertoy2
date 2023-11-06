@@ -44,7 +44,7 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 
     return _objects.Intersect(origin, direction, intersect_info);
 }
 
-const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light) const
+const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light, const bool consider_normal) const
 {
     float pmf;
 // #define DISABLE_POWER_LIGHT_SAMPLER
@@ -55,5 +55,5 @@ const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_in
     int idx = _light_sampler->Sample(&pmf);
 #endif // DISABLE_POWER_LIGHT_SAMPLER
     sampled_light = (SurfaceLight *)_dls_lights[idx].get();
-    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction);
+    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction, consider_normal);
 }
