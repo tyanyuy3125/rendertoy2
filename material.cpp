@@ -84,20 +84,20 @@ const std::unique_ptr<rendertoy::BSDF> rendertoy::GlassBSDF::GetBSDF(const Inter
             bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive,
                                                                distrib,
                                                                1.0f, eta));
-            bsdf->Add(std::make_shared<MicrofacetReflection>(albedo,
-                                                             distrib,
-                                                             std::make_shared<FresnelDielectric>(1.0f, eta)));
+            // bsdf->Add(std::make_shared<MicrofacetReflection>(albedo,
+            //                                                  distrib,
+            //                                                  std::make_shared<FresnelDielectric>(1.0f, eta)));
         }
         else
         {
             bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
-            bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
+            // bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
         }
     }
     else
     {
         bsdf->Add(std::make_shared<SpecularTransmission>(transmissive, 1.0f, eta));
-        bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
+        // bsdf->Add(std::make_shared<SpecularReflection>(albedo, std::make_shared<FresnelNoOp>()));
     }
     return bsdf;
 }

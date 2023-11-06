@@ -3,10 +3,11 @@
 #include "intersectinfo.h"
 #include "fresnel.h"
 #include "microfacet.h"
+#include "logger.h"
 
 bool rendertoy::BSDF::IsTransmissive() const
 {
-    for (int i = 0; i < MaxBxDFs; ++i)
+    for (int i = 0; i < nBxDFs; ++i)
     {
         if (bxdfs[i]->type & BSDF_TRANSMISSION)
         {
