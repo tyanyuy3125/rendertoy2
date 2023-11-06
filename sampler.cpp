@@ -16,6 +16,39 @@ const glm::vec3 rendertoy::UniformSampleHemisphere()
     return glm::vec3(r * std::cos(phi), r * std::sin(phi), z);
 }
 
+const float rendertoy::UniformSampleHemispherePdf()
+{
+    return 1.0f / glm::two_pi<float>();
+}
+
+const glm::vec2 rendertoy::ConcentricSampleDisk() {
+    glm::vec2 u{glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f)};
+    // Map uniform random numbers to $[-1,1]^2$
+    glm::vec2 uOffset = 2.f * u - glm::vec2(1.0f);
+
+    // Handle degeneracy at the origin
+    if (uOffset.x == 0.0f && uOffset.y == 0.0f) return glm::vec2(0.0f);
+
+    // Apply concentric mapping to point
+    float theta, r;
+    if (std::abs(uOffset.x) > std::abs(uOffset.y)) {
+        r = uOffset.x;
+        theta = glm::quarter_pi<float>() * (uOffset.y / uOffset.x);
+    } else {
+        r = uOffset.y;
+        theta = glm::half_pi<float>() - glm::quarter_pi<float>() * (uOffset.x / uOffset.y);
+    }
+    return r * glm::vec2(std::cos(theta), std::sin(theta));
+}
+
+const glm::vec3 rendertoy::CosineSampleHemisphere() {
+    glm::vec2 d = ConcentricSampleDisk();
+    float z = std::sqrt(std::max(0.0f, 1.0f - d.x * d.x - d.y * d.y));
+    return glm::vec3(d.x, d.y, z);
+}
+
+const float rendertoy::CosineSampleHemispherePdf(float cosTheta) { return cosTheta * glm::one_over_pi<float>(); }
+
 const float rendertoy::PowerHeuristic(int nf, float f_pdf, int ng, float g_pdf)
 {
     float f = static_cast<float>(nf) * f_pdf;

@@ -35,13 +35,14 @@ int main()
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableNumerical> emissive_strength = std::make_shared<ConstantNumerical>(10.0f);
-    std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>(tex_white, 0.5f);
-    std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red);
-    std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green);
+    std::shared_ptr<ISamplableNumerical> roughness = std::make_shared<ConstantNumerical>(45.0f);
+    std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>(tex_white, roughness);
+    std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red, roughness);
+    std::shared_ptr<IMaterial> mat_green = std::make_shared<DiffuseBSDF>(tex_green, roughness);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
     std::shared_ptr<IMaterial> mat_specular = std::make_shared<SpecularBSDF>(tex_white);
     scene->objects()[0]->mat() = mat_white;
-    scene->objects()[1]->mat() = mat_specular;
+    scene->objects()[1]->mat() = mat_white;
     scene->objects()[2]->mat() = mat_white;
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;
@@ -69,7 +70,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 96;
+    conf.spp = 16;
     conf.gamma = 2.2f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

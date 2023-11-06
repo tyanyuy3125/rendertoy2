@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 741
-#define BUILD_DATE "2023-11-05+17:12:37"
+#define BUILD_NUMBER 751
+#define BUILD_DATE "2023-11-06+12:21:12"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -45,6 +45,9 @@ namespace rendertoy
 {
     // Forward declarations
     class AliasTable;
+    class BeckmannDistribution;
+    class BSDF;
+    class BxDF;
     class Camera;
     class Emissive;
     class Fresnel;
@@ -58,11 +61,16 @@ namespace rendertoy
     class ISamplable;
     typedef ISamplable<glm::vec4> ISamplableColor;
     typedef ISamplable<float> ISamplableNumerical;
+    class LambertianReflection;
     class Light;
     class LightSampler;
+    class MicrofacetDistribution;
+    class MicrofacetReflection;
+    class OrenNayer;
     class Primitive;
     class Scene;
     class SurfaceLight;
+    class SpecularReflection;
     class TriangleMesh;
 
     inline float CosTheta(const glm::vec3 &w) { return w.z; }
@@ -179,5 +187,13 @@ namespace rendertoy
     inline const bool SameHemisphere(const glm::vec3 &w, const glm::vec3 &wp)
     {
         return w.z * wp.z > 0;
+    }
+
+    inline glm::vec3 Faceforward(const glm::vec3 &v, const glm::vec3 &v2) {
+        return (glm::dot(v, v2) < 0.f) ? -v : v;
+    }
+
+    inline glm::vec3 Reflect(const glm::vec3 &wo, const glm::vec3 &n) {
+        return -wo + 2 * glm::dot(wo, n) * n;
     }
 }
