@@ -56,6 +56,25 @@ namespace rendertoy
         }
     };
 
+    class Brightness : public ISamplable<float>
+    {
+        MATERIAL_SOCKET(image, Color);
+
+    public:
+        Brightness(const std::shared_ptr<ISamplableColor> image)
+        : _image(image) {}
+
+        virtual const float Sample(const float u, const float v) const
+        {
+            return Luminance(_image->Sample(u, v));
+        }
+
+        virtual const float Avg() const
+        {
+            return Luminance(_image->Avg());
+        }
+    };
+
     class ImageTexture : public ISamplable<glm::vec4>
     {
     private:

@@ -110,8 +110,17 @@ const glm::vec3 rendertoy::BSDF::Sample_f(const glm::vec3 &wo_w, glm::vec3 *wi_w
             *sampled_type = BxDFType(0);
         return glm::vec3(0.0f);
     }
-    int comp =
-        std::min(static_cast<int>(std::floor(u[0] * matchingComps)), matchingComps - 1);
+    int comp = 0;
+    float linear_sample = glm::linearRand<float>(0.0f, weights_cdf[nBxDFs - 1]);
+    for (int i = 0; i < nBxDFs; ++i)
+    {
+        if (linear_sample < weights_cdf[i])
+        {
+            comp = i;
+            break;
+        }
+    }
+    comp = std::min(comp, matchingComps - 1);
 
     // Get _BxDF_ pointer for chosen component
     std::shared_ptr<BxDF> bxdf = nullptr;
@@ -122,10 +131,6 @@ const glm::vec3 rendertoy::BSDF::Sample_f(const glm::vec3 &wo_w, glm::vec3 *wi_w
             bxdf = bxdfs[i];
             break;
         }
-
-    // Remap _BxDF_ sample _u_ to $[0,1)^2$
-    // glm::vec2 uRemapped(std::min(u[0] * matchingComps - comp, ONE_MINUS_EPSILON),
-    //                   u[1]);
 
     // Sample chosen _BxDF_
     glm::vec3 wi, wo = WorldToLocal(wo_w);
@@ -196,16 +201,17 @@ glm::vec3 rendertoy::MicrofacetReflection::f(const glm::vec3 &wo, const glm::vec
     float cosThetaO = AbsCosTheta(wo), cosThetaI = AbsCosTheta(wi);
     glm::vec3 wh = wi + wo;
     // Handle degenerate cases for microfacet reflection
-    if (cosThetaI == 0 || cosThetaO == 0)
-        return glm::vec3(0.);
-    if (wh.x == 0 && wh.y == 0 && wh.z == 0)
-        return glm::vec3(0.);
+    if (cosThetaI == 0.0f || cosThetaO == 0.0f)
+        return glm::vec3(0.0f);
+    if (wh.x == 0.0f && wh.y == 0.0f && wh.z == 0.0f)
+        return glm::vec3(0.0f);
     wh = glm::normalize(wh);
     // For the Fresnel call, make sure that wh is in the same hemisphere
     // as the surface normal, so that TIR is handled correctly.
     glm::vec3 F = fresnel->Evaluate(glm::dot(wi, Faceforward(wh, glm::vec3(0.0f, 0.0f, 1.0f))));
-    return R * distribution->D(wh) * distribution->G(wo, wi) * F /
+    glm::vec3 ret = R * distribution->D(wh) * distribution->G(wo, wi) * F /
            (4.0f * cosThetaI * cosThetaO);
+    return ret;
 }
 
 glm::vec3 rendertoy::MicrofacetReflection::Sample_f(const glm::vec3 &wo, glm::vec3 *wi, float *pdf, BxDFType *sampledType) const

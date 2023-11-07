@@ -102,11 +102,11 @@ const std::unique_ptr<rendertoy::BSDF> rendertoy::RefractionBSDF::GetBSDF(const 
         if (albedo != glm::vec3(0.0f))
         {
             std::shared_ptr<Fresnel> fresnel = std::make_shared<FresnelDielectric>(1.f, eta);
-            bsdf->Add(std::make_shared<MicrofacetReflection>(albedo, distrib, fresnel));
+            bsdf->Add(std::make_shared<MicrofacetReflection>(albedo, distrib, fresnel), Luminance(albedo));
         }
         if (transmissive != glm::vec3(0.0f))
         {
-            bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive, distrib, 1.f, eta));
+            bsdf->Add(std::make_shared<MicrofacetTransmission>(transmissive, distrib, 1.f, eta), Luminance(transmissive));
         }
     }
     return bsdf;

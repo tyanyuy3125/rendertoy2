@@ -306,10 +306,10 @@ void rendertoy::ProductionalRenderWork::Render()
     device.commit();
     oidn::FilterRef filter = device.newFilter("RT");
     filter.set("hdr", true);
-    filter.setImage("color", (float *)&_output(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
-    filter.setImage("albedo", (float *)&arw.GetResult(false)(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
-    filter.setImage("normal", (float *)&nrw.GetResult(false)(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
-    filter.setImage("output", (float *)&_output(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("color", (float *)&_output(0, 0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("albedo", (float *)&arw.GetResult(false)(0, 0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("normal", (float *)&nrw.GetResult(false)(0, 0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("output", (float *)&_output(0, 0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
     filter.commit();
     filter.execute();
     const char *errorMessage;

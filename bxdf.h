@@ -22,6 +22,7 @@ namespace rendertoy
         int nBxDFs = 0;
         static const int MaxBxDFs = 8;
         std::shared_ptr<BxDF> bxdfs[MaxBxDFs];
+        float weights_cdf[MaxBxDFs];
 
     public:
         const float _eta;
@@ -32,8 +33,9 @@ namespace rendertoy
             return bxdf_type & BSDF_SPECULAR;
         }
         bool IsTransmissive() const;
-        void Add(const std::shared_ptr<BxDF> &b)
+        void Add(const std::shared_ptr<BxDF> &b, const float weight = 1.0f)
         {
+            weights_cdf[nBxDFs] = (nBxDFs == 0) ? (weight) : (weights_cdf[nBxDFs - 1] + weight);
             bxdfs[nBxDFs++] = b;
         }
         const glm::vec3 LocalToWorld(const glm::vec3 &w) const
