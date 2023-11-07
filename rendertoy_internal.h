@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 918
-#define BUILD_DATE "2023-11-06+23:03:05"
+#define BUILD_NUMBER 955
+#define BUILD_DATE "2023-11-07+10:52:59"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -49,6 +49,7 @@ namespace rendertoy
     class BSDF;
     class BxDF;
     class Camera;
+    class DeltaLight;
     class Emissive;
     class Fresnel;
     class FresnelConductor;

@@ -12,3 +12,4 @@
 #include "texture.h"
 #include "material.h"
 #include "camera.h"
+#include "light.h"

@@ -5,11 +5,16 @@
 #include "material.h"
 #include "primitive.h"
 #include "light.h"
+#include "texture.h"
 
 void rendertoy::Scene::Init()
 {
     _objects.Construct();
     _dls_lights.clear();
+    for(const auto &light : _lights)
+    {
+        _dls_lights.push_back(light);
+    }
     for (const std::shared_ptr<Primitive> object : _objects.objects)
     {
         std::shared_ptr<Emissive> emissive_mat = std::dynamic_pointer_cast<Emissive>(object->_mat);
@@ -41,11 +46,36 @@ void rendertoy::Scene::Init()
 
 const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
 {
+#define ALPHA_TEST
+#ifdef ALPHA_TEST
+    bool ret = _objects.Intersect(origin, direction, intersect_info);
+    if(!ret)
+    {
+        return ret;
+    }
+    else
+    {
+        float alpha = intersect_info._mat->albedo()->Sample(intersect_info._uv).w;
+        if(glm::linearRand(0.0f, ONE_MINUS_EPSILON) > alpha)
+        {
+            return Intersect(intersect_info._coord, direction, intersect_info);
+        }
+        else
+        {
+            return true;
+        }
+    }
+#else
     return _objects.Intersect(origin, direction, intersect_info);
+#endif
 }
 
 const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light, const bool consider_normal) const
 {
+    if(_dls_lights.size() == 0)
+    {
+        return glm::vec3(0.0f);
+    }
     float pmf;
 // #define DISABLE_POWER_LIGHT_SAMPLER
 #ifdef DISABLE_POWER_LIGHT_SAMPLER

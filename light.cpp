@@ -7,6 +7,7 @@
 #include "material.h"
 #include "scene.h"
 #include "texture.h"
+#include "color.h"
 
 const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal) const
 {
@@ -17,7 +18,7 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     _surface_primitive->GenerateSamplePointOnSurface(uv, coord, light_normal);
     dir = coord - intersect_info._coord;
     float projected_area = std::abs(glm::dot(light_normal, dir) * _surface_primitive->GetArea());
-    if((consider_normal && glm::dot(dir, intersect_info._geometry_normal) < 0.0f) || std::abs(projected_area) < 1e-4)
+    if ((consider_normal && glm::dot(dir, intersect_info._geometry_normal) < 0.0f) || std::abs(projected_area) < 1e-4)
     {
         return glm::vec3(0.0f);
     }
@@ -25,7 +26,7 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     glm::vec3 normalized_dir = glm::normalize(dir);
     IntersectInfo shadow_ray_intersect_info;
     scene.Intersect(intersect_info._coord, normalized_dir, shadow_ray_intersect_info);
-    if(std::abs(shadow_ray_intersect_info._t - glm::length(dir)) > 1e-4)
+    if (std::abs(shadow_ray_intersect_info._t - glm::length(dir)) > 1e-4f)
     {
         return glm::vec3(0.0f);
     }
@@ -46,17 +47,40 @@ const float rendertoy::SurfaceLight::Phi() const
     return glm::two_pi<float>() * Luminance(glm::vec3(_material->albedo()->Avg())) * _material->strength()->Avg() * _surface_primitive->GetArea();
 }
 
-rendertoy::LightSampler::LightSampler(const std::vector<std::shared_ptr<Light> > &dls_lights)
+rendertoy::LightSampler::LightSampler(const std::vector<std::shared_ptr<Light>> &dls_lights)
 {
     std::vector<float> light_power(dls_lights.size());
-    for(size_t i = 0; i < dls_lights.size(); ++i)
+    for (size_t i = 0; i < dls_lights.size(); ++i)
     {
         light_power[i] = dls_lights[i]->Phi();
     }
-    if(std::accumulate(light_power.begin(), light_power.end(), 0.f) == 0.f)
+    if (std::accumulate(light_power.begin(), light_power.end(), 0.f) == 0.f)
     {
         std::fill(light_power.begin(), light_power.end(), 1.f);
     }
     alias_table = AliasTable(light_power);
 }
 
+const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal) const
+{
+    pdf = 1.0f;
+    const glm::vec3 dir = _position - intersect_info._coord;
+    if ((consider_normal && glm::dot(dir, intersect_info._geometry_normal) < 0.0f))
+    {
+        return glm::vec3(0.0f);
+    }
+    const glm::vec3 normalized_dir = glm::normalize(dir);
+    direction = normalized_dir;
+    IntersectInfo shadow_ray_intersect_info;
+    bool intersected = scene.Intersect(intersect_info._coord, normalized_dir, shadow_ray_intersect_info);
+    if (!intersected || (shadow_ray_intersect_info._t - glm::length(dir) > 1e-4f))
+    {
+        return _color * _strength;
+    }
+    return glm::vec3(0.0f);
+}
+
+const float rendertoy::DeltaLight::Phi() const
+{
+    return 4.0f * glm::pi<float>() * Luminance(_color) * _strength;
+}
