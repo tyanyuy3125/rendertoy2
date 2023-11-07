@@ -108,7 +108,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 16;
+    conf.spp = 4;
     conf.gamma = 2.4f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

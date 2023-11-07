@@ -60,7 +60,6 @@ if(WIN32)
 else()
     target_link_libraries(RenderToy2 PRIVATE tbb)
 endif()
-
 # find_package(OSL REQUIRED)
 # target_link_libraries(RenderToy2 PRIVATE OSL)
 

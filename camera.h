@@ -15,6 +15,7 @@ namespace rendertoy
         glm::float32 _fov;
         glm::float32 _aspect_ratio;
         glm::float32 _lens_radius = 0.0f;
+        glm::float32 _focal_distance = 4.0f;
 
     public:
         const glm::float32 &lens_radius() const

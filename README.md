@@ -11,16 +11,18 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Adaptive Sampling
 * SAH-BVH
 * MIS-DLS
-* Power Light Sampling (Using alias table)
+* Power Light Sampling (using alias table)
 * Lambertian BRDF
 * Oren-Layar BRDF
 * Specular BRDF
 * Transmissive BSDF
 * Alpha Test (testing A channel of RGBA, if given)
+* Depth of Field
+* Custom aperture (rejection sampling)
 * Fresnel
 * Denoiser using Intel® Open Image Denoise
 * Beckmann microfacet distribution
-* Texture Mapping (Similar to pbrt and Cycles, use `ISamplable<T>` to abstract the texture type)
+* Texture Mapping (similar to pbrt and Cycles, use `ISamplable<T>` to abstract the texture type)
 * Tone mapping
 * Programmable shader to manipulate pixels on images
 * Layer-based image composition

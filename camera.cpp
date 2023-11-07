@@ -15,9 +15,9 @@ void rendertoy::Camera::SpawnRay(glm::vec2 coord, glm::vec3 &origin, glm::vec3 &
 {
     coord.y = 1.0f - coord.y;
     glm::vec2 ndc = 2.0f * coord - glm::vec2(1.0f);
-    glm::vec3 ray_direction = glm::normalize(glm::vec3(ndc.x * _aspect_ratio, ndc.y, -1.0f / std::tan(_fov / 2.0f)));
+    glm::vec3 ray_screen = glm::vec3(glm::vec2(ndc.x * _aspect_ratio, ndc.y) * std::tan(_fov / 2.0f), -1.0f) * _focal_distance;
 
-    ray_direction = _rotation * ray_direction;
+    // ray_direction = _rotation * ray_direction;
     if (_lens_radius > 0.0f)
     {
         glm::vec2 lens_rand = glm::linearRand(glm::vec2(0.0f), glm::vec2(1.0f));
@@ -30,8 +30,10 @@ void rendertoy::Camera::SpawnRay(glm::vec2 coord, glm::vec3 &origin, glm::vec3 &
         }
         origin = _rotation * _lens_radius * glm::vec3(lens_rand * 2.0f - glm::vec2(1.0f), 0.0f);
     }
+    
+    glm::vec3 ray_direction = ray_screen - origin;
     origin += _origin;
-    direction = ray_direction;
+    direction = _rotation * glm::normalize(ray_direction);
 }
 
 void rendertoy::Camera::LookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up)
