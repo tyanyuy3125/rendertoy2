@@ -60,8 +60,12 @@ if(WIN32)
 else()
     target_link_libraries(RenderToy2 PRIVATE tbb)
 endif()
-# find_package(OpenImageDenoise REQUIRED)
-# target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
+
+# find_package(OSL REQUIRED)
+# target_link_libraries(RenderToy2 PRIVATE OSL)
+
+find_package(OpenImageDenoise REQUIRED)
+target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

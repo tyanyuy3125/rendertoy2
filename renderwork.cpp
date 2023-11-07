@@ -13,6 +13,7 @@
 #include "light.h"
 #include "bxdf.h"
 
+#include <OpenImageDenoise/oidn.hpp>
 #include <chrono>
 #include <cmath>
 
@@ -283,6 +284,40 @@ void rendertoy::PathTracingRenderWork::Render()
         return ret;
     };
     _output.PixelShade(tone_mapping);
+    std::chrono::duration<double> elapsed_time = end_time - start_time;
+    _stat.time_elapsed = elapsed_time.count();
+}
+
+void rendertoy::ProductionalRenderWork::Render()
+{
+    auto start_time = std::chrono::high_resolution_clock::now();
+    INFO << "Rendering beauty pass..." << std::endl;
+    PathTracingRenderWork ptrw(_render_config);
+    ptrw.Render();
+    _output = ptrw.GetResult(false);
+    INFO << "Rendering albedo pass..." << std::endl;
+    AlbedoRenderWork arw(_render_config);
+    arw.Render();
+    INFO << "Rendering normal pass..." << std::endl;
+    NormalRenderWork nrw(_render_config);
+    nrw.Render();
+    INFO << "Denoising..." << std::endl;
+    oidn::DeviceRef device = oidn::newDevice();
+    device.commit();
+    oidn::FilterRef filter = device.newFilter("RT");
+    filter.set("hdr", true);
+    filter.setImage("color", (float *)&_output(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("albedo", (float *)&arw.GetResult(false)(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("normal", (float *)&nrw.GetResult(false)(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.setImage("output", (float *)&_output(0,0), oidn::Format::Float3, _render_config.width, _render_config.height, 0, 16, 0);
+    filter.commit();
+    filter.execute();
+    const char *errorMessage;
+    if (device.getError(errorMessage) != oidn::Error::None)
+    {
+        CRIT << "OIDN Error: " << errorMessage << std::endl;
+    }
+    auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = end_time - start_time;
     _stat.time_elapsed = elapsed_time.count();
 }

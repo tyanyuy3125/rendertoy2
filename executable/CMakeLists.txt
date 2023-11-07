@@ -1,8 +1,8 @@
-add_executable(Executable main.cpp)
+add_executable(CornellBox cornellbox.cpp)
 add_executable(Alpha alpha.cpp)
 
-target_link_libraries(Executable PRIVATE RenderToy2)
-target_include_directories(Executable PRIVATE ../)
+target_link_libraries(CornellBox PRIVATE RenderToy2)
+target_include_directories(CornellBox PRIVATE ../)
 
 target_link_libraries(Alpha PRIVATE RenderToy2)
 target_include_directories(Alpha PRIVATE ../)

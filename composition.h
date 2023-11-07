@@ -24,6 +24,11 @@ namespace rendertoy
         int _height;
 
     public:
+        const std::vector<glm::vec4> &GetBuffer() const
+        {
+            return _buffer;
+        }
+
         const glm::vec4 &operator()(const int x, const int y) const;
         glm::vec4 &operator()(const int x, const int y);
 

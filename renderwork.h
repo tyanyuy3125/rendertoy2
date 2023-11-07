@@ -97,4 +97,13 @@ namespace rendertoy
         PathTracingRenderWork(const RenderConfig &render_config)
         : IRenderWork(render_config) {}
     };
+
+    class ProductionalRenderWork : public IRenderWork
+    {
+        CLASS_METADATA_MARK(ProductionalRenderWork)
+    public:
+        virtual void Render();
+        ProductionalRenderWork(const RenderConfig &render_config)
+        : IRenderWork(render_config) {}
+    };
 }
