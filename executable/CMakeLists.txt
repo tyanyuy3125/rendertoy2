@@ -7,5 +7,5 @@ target_include_directories(CornellBox PRIVATE ../)
 target_link_libraries(Alpha PRIVATE RenderToy2)
 target_include_directories(Alpha PRIVATE ../)
 
-file(COPY alpha.obj alpha.png
+file(COPY alpha.obj alpha.png lens_mask.png
      DESTINATION ${CMAKE_BINARY_DIR}/executable)

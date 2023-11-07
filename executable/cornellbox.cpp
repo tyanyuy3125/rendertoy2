@@ -90,6 +90,16 @@ int main()
     scene->hdr_background() = hdr_bg;
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{0.0f, 1.0f, 4.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(45.0f), 16.0f / 9.0f);
+    camera->lens_radius() = 0.5f;
+    ImageTexture lens_mask("./lens_mask.png");
+    camera->func_reject_lens_sampling = [&](const glm::vec2 &v) -> bool
+    {
+        if(lens_mask.Sample(v.x, v.y).x > 0.5f)
+        {
+            return true;
+        }
+        return false;
+    };
 
     RenderConfig conf;
     conf.width = 1280;
@@ -100,7 +110,7 @@ int main()
     conf.y_sample = 4;
     conf.spp = 16;
     conf.gamma = 2.4f;
-    ProductionalRenderWork renderwork(conf);
+    PathTracingRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
     #ifdef _WIN32

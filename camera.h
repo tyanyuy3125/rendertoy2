@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <functional>
+
 #include "rendertoy_internal.h"
 
 namespace rendertoy
@@ -11,12 +14,22 @@ namespace rendertoy
         glm::mat3 _rotation;
         glm::float32 _fov;
         glm::float32 _aspect_ratio;
-    
+        glm::float32 _lens_radius = 0.0f;
+
     public:
+        const glm::float32 &lens_radius() const
+        {
+            return _lens_radius;
+        }
+        glm::float32 &lens_radius()
+        {
+            return _lens_radius;
+        }
+        std::optional<std::function<bool(const glm::vec2 &)>> func_reject_lens_sampling = {};
         Camera() = delete;
         Camera(const glm::vec3 &origin, const glm::mat3 &rotation, const glm::float32 fov, const glm::float32 aspect_ratio);
         Camera(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up, const glm::float32 fov, const glm::float32 aspect_ratio);
-        void SpawnRay(glm::vec2 coord, glm::vec3 RENDERTOY_FUNC_ARGUMENT_OUT origin, glm::vec3 RENDERTOY_FUNC_ARGUMENT_OUT direction) const;
+        void SpawnRay(glm::vec2 coord, glm::vec3 &origin, glm::vec3 &direction) const;
         void LookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up);
     };
 }
