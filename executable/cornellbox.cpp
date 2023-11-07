@@ -33,7 +33,8 @@ int main()
     // scene->objects().push_back(std::make_shared<UVSphere>(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f));
 
     std::shared_ptr<ISamplableColor> tex_white = std::make_shared<ColorTexture>(glm::vec4{1.0f});
-    std::shared_ptr<ISamplableColor> tex_black = std::make_shared<ColorTexture>(glm::vec4{0.0f});
+    std::shared_ptr<ISamplableColor> tex_white2 = std::make_shared<ColorTexture>(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
+    std::shared_ptr<ISamplableColor> tex_black = std::make_shared<ColorTexture>(glm::vec4{0.1f, 0.1f, 0.1f, 1.0f});
     std::shared_ptr<ISamplableColor> tex_R = std::make_shared<ColorTexture>(glm::vec4{0.3f});
     std::shared_ptr<ISamplableColor> tex_red = std::make_shared<ColorTexture>(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -47,11 +48,11 @@ int main()
     std::shared_ptr<IMaterial> mat_specular = std::make_shared<SpecularBSDF>(tex_white);
     std::shared_ptr<ISamplableColor> copper_eta = std::make_shared<ColorTexture>(glm::vec4(0.27105f, 0.67693f, 1.31640f, 1.0f));
     std::shared_ptr<ISamplableColor> copper_k = std::make_shared<ColorTexture>(glm::vec4(3.60920f, 2.62480f, 2.29210f, 1.0f));
-    std::shared_ptr<ISamplableNumerical> water_eta = std::make_shared<ConstantNumerical>(1.333f);
+    std::shared_ptr<ISamplableNumerical> water_eta = std::make_shared<ConstantNumerical>(1.1f);
     std::shared_ptr<IMaterial> mat_metal = std::make_shared<MetalBSDF>(tex_white, copper_eta, copper_k, metal_roughness, metal_roughness);
     std::shared_ptr<IMaterial> mat_glass = std::make_shared<RefractionBSDF>(tex_R, tex_white, water_eta);
-    std::shared_ptr<ISamplableNumerical> glass_roughness = std::make_shared<ConstantNumerical>(0.0001f);
-    std::shared_ptr<IMaterial> mat_frosted_glass = std::make_shared<RefractionBSDF>(tex_white, tex_white, water_eta, glass_roughness, glass_roughness);
+    std::shared_ptr<ISamplableNumerical> glass_roughness = std::make_shared<ConstantNumerical>(0.05f);
+    std::shared_ptr<IMaterial> mat_frosted_glass = std::make_shared<RefractionBSDF>(tex_black, tex_white2, water_eta, glass_roughness, glass_roughness);
     std::shared_ptr<IMaterial> mat_principled = std::make_shared<PrincipledBSDF>(
         tex_white,
         std::make_shared<ConstantNumerical>(0.5f),
@@ -71,7 +72,7 @@ int main()
     // std::shared_ptr<IMaterial> mat_metal;
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_white;
-    scene->objects()[2]->mat() = mat_white;
+    scene->objects()[2]->mat() = mat_frosted_glass;
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;
     scene->objects()[5]->mat() = mat_green;
@@ -90,7 +91,7 @@ int main()
     scene->hdr_background() = hdr_bg;
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{0.0f, 1.0f, 4.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(45.0f), 16.0f / 9.0f);
-    camera->lens_radius() = 0.5f;
+    camera->lens_radius() = 0.0f;
     ImageTexture lens_mask("./lens_mask.png");
     camera->func_reject_lens_sampling = [&](const glm::vec2 &v) -> bool
     {
