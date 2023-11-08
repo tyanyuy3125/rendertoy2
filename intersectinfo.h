@@ -19,4 +19,13 @@ namespace rendertoy
 
         const glm::mat3 GenerateSurfaceCoordinates() const;
     };
+
+    struct VolumeInteraction
+    {
+        glm::vec3 _wo;
+        glm::vec3 _coord;
+        bool _valid = false;;
+
+        std::shared_ptr<PhaseFunction> _phase_func;
+    };
 }

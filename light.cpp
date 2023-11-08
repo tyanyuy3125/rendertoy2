@@ -9,8 +9,9 @@
 #include "texture.h"
 #include "color.h"
 
-const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal) const
+const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const
 {
+    do_heuristic = true;
     glm::vec2 uv;
     glm::vec3 coord;
     glm::vec3 dir;
@@ -35,10 +36,41 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     return _material->EvalEmissive(uv);
 }
 
+const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const
+{
+    do_heuristic = true;
+    glm::vec2 uv;
+    glm::vec3 coord;
+    glm::vec3 dir;
+    glm::vec3 light_normal;
+    _surface_primitive->GenerateSamplePointOnSurface(uv, coord, light_normal);
+    dir = coord - view_point;
+    float projected_area = std::abs(glm::dot(light_normal, dir) * _surface_primitive->GetArea());
+    if (std::abs(projected_area) < 1e-4f)
+    {
+        return glm::vec3(0.0f);
+    }
+    pdf = glm::dot(dir, dir) / projected_area;
+    glm::vec3 normalized_dir = glm::normalize(dir);
+    IntersectInfo shadow_ray_intersect_info;
+    scene.Intersect(view_point, normalized_dir, shadow_ray_intersect_info);
+    if (std::abs(shadow_ray_intersect_info._t - glm::length(dir)) > 1e-4f)
+    {
+        return glm::vec3(0.0f);
+    }
+    direction = glm::vec3(normalized_dir);
+    return _material->EvalEmissive(uv);
+}
+
 const glm::vec3 rendertoy::SurfaceLight::Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const
 {
     pdf = _surface_primitive->Pdf(intersect_info._coord - last_origin, intersect_info._uv);
     return _material->EvalEmissive(intersect_info._uv);
+}
+
+const glm::vec3 rendertoy::SurfaceLight::Center() const
+{
+    return _surface_primitive->GetBoundingBox().GetCenter();
 }
 
 const float rendertoy::SurfaceLight::Phi() const
@@ -61,10 +93,12 @@ rendertoy::LightSampler::LightSampler(const std::vector<std::shared_ptr<Light>> 
     alias_table = AliasTable(light_power);
 }
 
-const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal) const
+const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const
 {
+    do_heuristic = false;
     pdf = 1.0f;
     const glm::vec3 dir = _position - intersect_info._coord;
+    // pdf = glm::dot(dir, dir);
     if ((consider_normal && glm::dot(dir, intersect_info._geometry_normal) < 0.0f))
     {
         return glm::vec3(0.0f);
@@ -75,9 +109,31 @@ const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const Inter
     bool intersected = scene.Intersect(intersect_info._coord, normalized_dir, shadow_ray_intersect_info);
     if (!intersected || (shadow_ray_intersect_info._t - glm::length(dir) > 1e-4f))
     {
-        return _color * _strength;
+        return _color * _strength / glm::dot(dir, dir);
     }
     return glm::vec3(0.0f);
+}
+
+const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const
+{
+    do_heuristic = false;
+    pdf = 1.0f;
+    const glm::vec3 dir = _position - view_point;
+    // pdf = glm::dot(dir, dir);
+    const glm::vec3 normalized_dir = glm::normalize(dir);
+    direction = normalized_dir;
+    IntersectInfo shadow_ray_intersect_info;
+    bool intersected = scene.Intersect(view_point, normalized_dir, shadow_ray_intersect_info);
+    if (!intersected || (shadow_ray_intersect_info._t - glm::length(dir) > 1e-4f))
+    {
+        return _color * _strength / glm::dot(dir, dir);
+    }
+    return glm::vec3(0.0f);
+}
+
+const glm::vec3 rendertoy::DeltaLight::Center() const
+{
+    return _position;
 }
 
 const float rendertoy::DeltaLight::Phi() const

@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1108
-#define BUILD_DATE "2023-11-08+18:27:59"
+#define BUILD_NUMBER 1208
+#define BUILD_DATE "2023-11-09+02:55:30"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -76,6 +76,7 @@ namespace rendertoy
     class SurfaceLight;
     class SpecularReflection;
     class TriangleMesh;
+    struct VolumeInteraction;
 
     inline float CosTheta(const glm::vec3 &w) { return w.z; }
     inline float Cos2Theta(const glm::vec3 &w) { return w.z * w.z; }

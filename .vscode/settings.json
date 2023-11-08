@@ -111,6 +111,7 @@
         "xtree": "cpp",
         "queue": "cpp",
         "numbers": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "semaphore": "cpp"
     }
 }

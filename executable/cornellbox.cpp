@@ -88,7 +88,7 @@ int main()
 #else
     // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
 #endif
-    std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
     hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
 
@@ -111,7 +111,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 32;
+    conf.spp = 4;
     conf.gamma = 2.4f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

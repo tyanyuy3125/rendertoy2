@@ -42,7 +42,10 @@ namespace rendertoy
         }
 
         void Init();
-        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const;
-        const glm::vec3 SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light, const bool consider_normal = true) const;
+        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const;
+        const bool Intersect(const glm::vec3 &p0, const glm::vec3 &p1) const;
+        const glm::vec3 SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
+        const glm::vec3 SampleLights(const VolumeInteraction &v_i, float &pdf, glm::vec3 &direction, bool &do_heuristic) const;
+        const Light* SampleLights(float *pmf) const;
     };
 }

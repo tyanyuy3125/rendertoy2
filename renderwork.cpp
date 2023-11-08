@@ -191,106 +191,46 @@ void rendertoy::PathTracingRenderWork::Render()
         bool specular_bounce = false;
         float eta = 1.0f;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.35f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
+        std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
+
         for (int depth = 0; depth < 8; ++depth)
         {
             bool intersected = _render_config.scene->Intersect(origin, direction, intersect_info);
-            // 在目前的开发阶段，我们认为光线在场景中的全过程都处在散射介质中。
-            bool scattered = false;
-            if (true) // TODO
+            if (!intersected)
             {
-                float tmax = intersected ? (intersect_info._t) : (1e9f); // TODO: Managing Infinity
+                intersect_info._t = 1e6f;
+            }
 
-                std::shared_ptr<PiecewiseMajorantIterator> iter = medium->SampleRay(origin, direction, tmax);
-                glm::vec3 T_maj(1.0f);
-                while (true)
+            VolumeInteraction volume_intersect_info;
+            factor *= medium->Sample(origin, direction, intersect_info._t, volume_intersect_info);
+            if (glm::length2(factor) < 1e-10f)
+            {
+                break;
+            }
+
+            if (volume_intersect_info._valid)
+            {
+                float volume_dls_pdf, volume_scattering_pdf;
+                glm::vec3 volume_dls_direction;
+                bool do_heuristic = true;
+                glm::vec3 volume_dls_Ld = _render_config.scene->SampleLights(volume_intersect_info, volume_dls_pdf, volume_dls_direction, do_heuristic);
+                if (glm::dot(volume_dls_Ld, volume_dls_Ld) > 1e-5f)
                 {
-                    std::optional<PiecewiseMajorantSegement> seg = iter->Next();
-                    if (!seg)
-                    {
-                        goto MAJORANT_SAMPLING_TERMINATION;
-                    }
-                    // 如果不处理这种情况，SampleExponential 会崩溃。
-                    if (seg->_sigma_maj[0] == 0.0f)
-                    {
-                        float dt = seg->_tmax - seg->_tmin;
-                        T_maj *= glm::exp(-dt * seg->_sigma_maj);
-                        continue;
-                    }
-
-                    // Delta Tracking 循环
-                    float tmin = seg->_tmin;
-                    while (true)
-                    {
-                        float t = tmin + SampleExponential(glm::linearRand(0.0f, 1.0f), seg->_sigma_maj[0]);
-                        if (t < seg->_tmax)
-                        {
-                            T_maj *= glm::exp(-(t - tmin) * seg->_sigma_maj);
-                            DifferentialVolumeProperties prop = medium->SamplePoint(origin + t * direction);
-                            // 采样得到体积内的某一点，计算该点的各个参数
-                            // 如果光线已经被彻底衰减，那么终止本次光线采样循环
-                            if (glm::length(factor) < 1e-6f)
-                            {
-                                return L * _render_config.exposure;
-                            }
-
-                            // TODO: 考虑体积发射
-
-                            // 计算吸收、散射和 Null collision 的概率，并进行逆变换采样
-                            float p_absorb = prop._sigma_a[0] / seg->_sigma_maj[0];
-                            float p_scatter = prop._sigma_s[0] / seg->_sigma_maj[0];
-                            float p_null = std::max(0.0f, 1.0f - p_absorb - p_scatter);
-
-                            int mode = SampleDiscrete(std::vector<float>{p_absorb, p_scatter, p_null});
-                            if (mode == 0) // 吸收
-                            {
-                                return L * _render_config.exposure;
-                            }
-                            else if (mode == 1) // 散射
-                            {
-                                float pdf = T_maj[0] * prop._sigma_s[0];
-                                factor *= T_maj * prop._sigma_s / pdf;
-
-                                // TODO: 光源采样
-
-                                // 产生新的散射光线
-                                float vol_scattering_pdf;
-                                glm::vec3 new_direction = prop._phase_func->Sample_p(-direction, &vol_scattering_pdf);
-                                if (vol_scattering_pdf < 1e-9f)
-                                {
-                                    return L * _render_config.exposure;
-                                }
-                                else
-                                {
-                                    origin = origin + t * direction;
-                                    direction = new_direction;
-                                    scattered = true;
-                                    goto MAJORANT_SAMPLING_TERMINATION;
-                                }
-                            }
-                            else
-                            {
-                                // Null Collision，继续采样下一个点
-                                tmin = t;
-                                T_maj = glm::vec3(1.0f);
-                            }
-                        }
-                        else
-                        {
-                            float dt = seg->_tmax - tmin;
-                            T_maj *= glm::exp(-dt * seg->_sigma_maj);
-                            break; // 继续下一个 segment
-                        }
-                    }
+                    volume_scattering_pdf = volume_intersect_info._phase_func->p(volume_intersect_info._wo, volume_dls_direction);
+                    glm::vec3 volume_dls_spectrum(volume_scattering_pdf);
+                    if(do_heuristic)
+                        L += factor * PowerHeuristic(1, volume_dls_pdf, 1, volume_scattering_pdf) * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
+                    else
+                        L += factor * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
                 }
-            MAJORANT_SAMPLING_TERMINATION:
-                T_maj = glm::vec3(1.0f);
+
+                glm::vec3 wo = -direction, wi;
+                wi = volume_intersect_info._phase_func->Sample_p(wo, &pdf_next);
+                origin = volume_intersect_info._coord;
+                direction = wi;
+                specular_bounce = false;
             }
 
-            if (scattered)
-            {
-                continue;
-            }
             if (intersected)
             {
                 // 如果当前表面是发光表面，则进行直接光源采样的BSDF采样或者亮度项计算
@@ -323,13 +263,16 @@ void rendertoy::PathTracingRenderWork::Render()
                     bool consider_normal = !bsdf->IsTransmissive();
                     // bool consider_normal = true;
                     glm::vec3 dls_direction;
-                    SurfaceLight *sampled_light = nullptr;
-                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, sampled_light, consider_normal);
+                    bool do_heuristic = true;
+                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, consider_normal, do_heuristic);
                     glm::vec3 dls_mat_spectrum;
                     if (glm::dot(dls_Li, dls_Li) > 1e-5f)
                     {
                         dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
-                        L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
+                        if(do_heuristic)
+                            L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
+                        else
+                            L += factor * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
                     }
                 }
 

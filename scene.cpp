@@ -44,7 +44,7 @@ void rendertoy::Scene::Init()
     _light_sampler = std::make_shared<LightSampler>(_dls_lights);
 }
 
-const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
+const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const
 {
 #define ALPHA_TEST
 #ifdef ALPHA_TEST
@@ -70,7 +70,14 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 
 #endif
 }
 
-const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, SurfaceLight *&sampled_light, const bool consider_normal) const
+const bool rendertoy::Scene::Intersect(const glm::vec3 &p0, const glm::vec3 &p1) const
+{
+    auto direction = glm::normalize(p1 - p0);
+    IntersectInfo ii_discard;
+    return Intersect(p0, direction, ii_discard);
+}
+
+const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const
 {
     if(_dls_lights.size() == 0)
     {
@@ -84,6 +91,22 @@ const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_in
 #else
     int idx = _light_sampler->Sample(&pmf);
 #endif // DISABLE_POWER_LIGHT_SAMPLER
-    sampled_light = (SurfaceLight *)_dls_lights[idx].get();
-    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction, consider_normal);
+    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, intersect_info, pdf, direction, consider_normal, do_heuristic);
+}
+
+const glm::vec3 rendertoy::Scene::SampleLights(const VolumeInteraction &v_i, float &pdf, glm::vec3 &direction, bool &do_heuristic) const
+{
+    if(_dls_lights.size() == 0)
+    {
+        return glm::vec3(0.0f);
+    }
+    float pmf;
+    int idx = _light_sampler->Sample(&pmf);
+    return (1.0f / pmf) * _dls_lights[idx]->Sample_Ld(*this, v_i._coord, direction, pdf, do_heuristic);
+}
+
+const rendertoy::Light *rendertoy::Scene::SampleLights(float *pmf) const
+{
+    int idx = _light_sampler->Sample(pmf);
+    return _dls_lights[idx].get();
 }

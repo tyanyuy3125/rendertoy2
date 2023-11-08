@@ -18,9 +18,11 @@ namespace rendertoy
         /// @param intersect_info
         /// @param pdf
         /// @return Radiance contribution.
-        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal = true) const = 0;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const = 0;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const = 0;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const = 0;
         virtual const float Phi() const = 0;
+        virtual const glm::vec3 Center() const = 0;
     };
 
     class SurfaceLight : public Light
@@ -34,9 +36,10 @@ namespace rendertoy
     public:
         SurfaceLight() = delete;
         SurfaceLight(std::shared_ptr<Primitive> surface_primitive, std::shared_ptr<Emissive> material) : _surface_primitive(surface_primitive), _material(material) {}
-        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal = true) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const;
-
+        virtual const glm::vec3 Center() const;
         virtual const float Phi() const;
     };
 
@@ -51,14 +54,17 @@ namespace rendertoy
         DeltaLight() = delete;
         DeltaLight(const glm::vec3 &color, const float strength, const glm::vec3 &position)
             : _color(color), _strength(strength), _position(position) {}
-        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal = true) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const
         {
             return glm::vec3(0.0f);
         }
-        
+        virtual const glm::vec3 Center() const;
         virtual const float Phi() const;
     };
+
+    
 
     class LightSampler
     {
