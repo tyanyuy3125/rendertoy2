@@ -40,7 +40,9 @@ add_library(RenderToy2 STATIC primitive.h primitive.cpp
                               fresnel.h fresnel.cpp
                               microfacet.h microfacet.cpp
                               bxdf.h bxdf.cpp
-                              principled.h principled.cpp)
+                              principled.h principled.cpp
+                              medium.h medium.cpp
+                              phase.h phase.cpp)
 
 add_dependencies(RenderToy2 update_build_number)
 

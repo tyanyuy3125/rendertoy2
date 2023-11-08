@@ -62,12 +62,14 @@ namespace rendertoy
     class ISamplable;
     typedef ISamplable<glm::vec4> ISamplableColor;
     typedef ISamplable<float> ISamplableNumerical;
+    class IsotropicPhaseFunction;
     class LambertianReflection;
     class Light;
     class LightSampler;
     class MicrofacetDistribution;
     class MicrofacetReflection;
     class OrenNayer;
+    class PhaseFunction;
     class Primitive;
     class Scene;
     class SurfaceLight;
