@@ -74,7 +74,7 @@ int main()
     // std::shared_ptr<IMaterial> mat_metal;
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_white;
-    scene->objects()[2]->mat() = mat_principled;
+    scene->objects()[2]->mat() = mat_white;
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;
     scene->objects()[5]->mat() = mat_green;
@@ -111,7 +111,7 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 4;
+    conf.spp = 32;
     conf.gamma = 2.4f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();

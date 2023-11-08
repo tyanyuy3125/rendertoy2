@@ -66,9 +66,23 @@ const glm::vec3 rendertoy::UniformSampleSphere()
 {
     float z = 1 - 2 * glm::linearRand(0.0f, 1.0f);
     float r = std::sqrt(1 - z * z);
-    assert(1 - z*z < 0);
+    assert(1 - z * z < 0);
     float phi = 2 * glm::pi<float>() * glm::linearRand(0.0f, 1.0f);
     return {r * std::cos(phi), r * std::sin(phi), z};
+}
+
+const float rendertoy::SampleExponential(const float u, const float a)
+{
+    return -std::log(1 - u) / a;
+}
+
+const int rendertoy::SampleDiscrete(std::span<const float> weights)
+{
+    std::vector<float> cdf(weights.size());
+    std::partial_sum(weights.begin(), weights.end(), cdf.begin());
+    float random_value = glm::linearRand<float>(0.0f, cdf.back());
+    auto it = std::lower_bound(cdf.begin(), cdf.end(), random_value);
+    return std::distance(cdf.begin(), it);
 }
 
 rendertoy::AliasTable::AliasTable(std::span<float> weights)

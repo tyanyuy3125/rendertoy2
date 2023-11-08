@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1084
-#define BUILD_DATE "2023-11-08+02:38:50"
+#define BUILD_NUMBER 1108
+#define BUILD_DATE "2023-11-08+18:27:59"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -63,6 +63,7 @@ namespace rendertoy
     typedef ISamplable<glm::vec4> ISamplableColor;
     typedef ISamplable<float> ISamplableNumerical;
     class IsotropicPhaseFunction;
+    class HenyeyGreensteinPhaseFunction;
     class LambertianReflection;
     class Light;
     class LightSampler;
@@ -187,6 +188,14 @@ namespace rendertoy
                          cosTheta);
     }
 
+    inline const glm::vec3 SphericalDirection(float sinTheta, float cosTheta, float phi,
+                                const glm::vec3 &x, const glm::vec3 &y,
+                                const glm::vec3 &z)
+    {
+        return sinTheta * std::cos(phi) * x + sinTheta * std::sin(phi) * y +
+               cosTheta * z;
+    }
+
     inline const bool SameHemisphere(const glm::vec3 &w, const glm::vec3 &wp)
     {
         return w.z * wp.z > 0;
@@ -216,5 +225,15 @@ namespace rendertoy
         float cosThetaT = std::sqrt(1.0f - sin2ThetaT);
         *wt = eta * -wi + (eta * cosThetaI - cosThetaT) * glm::vec3(n);
         return true;
+    }
+
+    inline void CoordinateSystem(const glm::vec3 &v1, glm::vec3 *v2,
+                                 glm::vec3 *v3)
+    {
+        if (std::abs(v1.x) > std::abs(v1.y))
+            *v2 = glm::vec3(-v1.z, 0, v1.x) / std::sqrt(v1.x * v1.x + v1.z * v1.z);
+        else
+            *v2 = glm::vec3(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
+        *v3 = glm::cross(v1, *v2);
     }
 }

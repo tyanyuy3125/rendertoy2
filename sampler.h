@@ -14,6 +14,8 @@ namespace rendertoy
     const float CosineSampleHemispherePdf(float cosTheta);
     const float PowerHeuristic(int nf, float f_pdf, int ng, float g_pdf);
     const glm::vec3 UniformSampleSphere();
+    const float SampleExponential(const float u, const float a);
+    const int SampleDiscrete(std::span<const float> weights);
 
     class AliasTable
     {
