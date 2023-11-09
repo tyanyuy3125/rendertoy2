@@ -191,7 +191,7 @@ void rendertoy::PathTracingRenderWork::Render()
         bool specular_bounce = false;
         float eta = 1.0f;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
+        // std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
 
         for (int depth = 0; depth < 8; ++depth)
         {
@@ -201,35 +201,36 @@ void rendertoy::PathTracingRenderWork::Render()
                 intersect_info._t = 1e6f;
             }
 
-            VolumeInteraction volume_intersect_info;
-            factor *= medium->Sample(origin, direction, intersect_info._t, volume_intersect_info);
-            if (glm::length2(factor) < 1e-10f)
-            {
-                break;
-            }
+            // VolumeInteraction volume_intersect_info;
+            // factor *= medium->Sample(origin, direction, intersect_info._t, volume_intersect_info);
+            // if (glm::length2(factor) < 1e-10f)
+            // {
+            //     break;
+            // }
 
-            if (volume_intersect_info._valid)
-            {
-                float volume_dls_pdf, volume_scattering_pdf;
-                glm::vec3 volume_dls_direction;
-                bool do_heuristic = true;
-                glm::vec3 volume_dls_Ld = _render_config.scene->SampleLights(volume_intersect_info, volume_dls_pdf, volume_dls_direction, do_heuristic);
-                if (glm::dot(volume_dls_Ld, volume_dls_Ld) > 1e-5f)
-                {
-                    volume_scattering_pdf = volume_intersect_info._phase_func->p(volume_intersect_info._wo, volume_dls_direction);
-                    glm::vec3 volume_dls_spectrum(volume_scattering_pdf);
-                    if(do_heuristic)
-                        L += factor * PowerHeuristic(1, volume_dls_pdf, 1, volume_scattering_pdf) * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
-                    else
-                        L += factor * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
-                }
+            // if (volume_intersect_info._valid)
+            // {
+            //     float volume_dls_pdf, volume_scattering_pdf;
+            //     glm::vec3 volume_dls_direction;
+            //     bool do_heuristic = true;
+            //     glm::vec3 volume_dls_Ld = _render_config.scene->SampleLights(volume_intersect_info, volume_dls_pdf, volume_dls_direction, do_heuristic);
+            //     if (glm::dot(volume_dls_Ld, volume_dls_Ld) > 1e-5f)
+            //     {
+            //         volume_scattering_pdf = volume_intersect_info._phase_func->p(volume_intersect_info._wo, volume_dls_direction);
+            //         glm::vec3 volume_dls_spectrum(volume_scattering_pdf);
+            //         if(do_heuristic)
+            //             L += factor * PowerHeuristic(1, volume_dls_pdf, 1, volume_scattering_pdf) * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
+            //         else
+            //             L += factor * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
+            //     }
 
-                glm::vec3 wo = -direction, wi;
-                wi = volume_intersect_info._phase_func->Sample_p(wo, &pdf_next);
-                origin = volume_intersect_info._coord;
-                direction = wi;
-                specular_bounce = false;
-            }
+            //     // glm::vec3 wo = -direction, wi;
+            //     // wi = volume_intersect_info._phase_func->Sample_p(wo, &pdf_next);
+            //     // origin = volume_intersect_info._coord;
+            //     // direction = wi;
+            //     // specular_bounce = false;
+            //     // continue;
+            // }
 
             if (intersected)
             {

@@ -22,7 +22,6 @@ namespace rendertoy
         virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const = 0;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const = 0;
         virtual const float Phi() const = 0;
-        virtual const glm::vec3 Center() const = 0;
     };
 
     class SurfaceLight : public Light
@@ -39,7 +38,6 @@ namespace rendertoy
         virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
         virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const;
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const;
-        virtual const glm::vec3 Center() const;
         virtual const float Phi() const;
     };
 
@@ -60,7 +58,6 @@ namespace rendertoy
         {
             return glm::vec3(0.0f);
         }
-        virtual const glm::vec3 Center() const;
         virtual const float Phi() const;
     };
 

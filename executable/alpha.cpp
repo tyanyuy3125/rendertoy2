@@ -42,7 +42,7 @@ int main()
     // std::shared_ptr<IMaterial> mat_metal;
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_alpha;
-    scene->lights().push_back(std::make_shared<DeltaLight>(glm::vec3(1.0f), 5.0f, glm::vec3(2.0f, 4.0f, 2.0f)));
+    scene->lights().push_back(std::make_shared<DeltaLight>(glm::vec3(1.0f), 50.0f, glm::vec3(2.0f, 4.0f, 2.0f)));
 
     scene->Init();
     INFO << "Scene inited." << std::endl;

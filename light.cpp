@@ -68,11 +68,6 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Le(const glm::vec3 &last_origin,
     return _material->EvalEmissive(intersect_info._uv);
 }
 
-const glm::vec3 rendertoy::SurfaceLight::Center() const
-{
-    return _surface_primitive->GetBoundingBox().GetCenter();
-}
-
 const float rendertoy::SurfaceLight::Phi() const
 {
     // We assume all lights are two sided.
@@ -129,11 +124,6 @@ const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const glm::
         return _color * _strength / glm::dot(dir, dir);
     }
     return glm::vec3(0.0f);
-}
-
-const glm::vec3 rendertoy::DeltaLight::Center() const
-{
-    return _position;
 }
 
 const float rendertoy::DeltaLight::Phi() const
