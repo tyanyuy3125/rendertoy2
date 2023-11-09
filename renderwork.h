@@ -14,6 +14,7 @@ namespace rendertoy
         int height = 1080;
         float exposure = 0.5f;
         float gamma = 2.2f;
+        float time = 0.0f;
 
         std::shared_ptr<Camera> camera;
         std::shared_ptr<Scene> scene;

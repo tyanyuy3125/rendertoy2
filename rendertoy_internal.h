@@ -5,14 +5,16 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #define RENDERTOY_FUNC_ARGUMENT_OUT &
 
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1305
-#define BUILD_DATE "2023-11-09+21:06:27"
+#define BUILD_NUMBER 1336
+#define BUILD_DATE "2023-11-10+00:54:06"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \

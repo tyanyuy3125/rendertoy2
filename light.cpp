@@ -27,6 +27,7 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const Int
     pdf = glm::dot(dir, dir) / projected_area;
     glm::vec3 normalized_dir = glm::normalize(dir);
     IntersectInfo shadow_ray_intersect_info;
+    shadow_ray_intersect_info._time = intersect_info._time;
     scene.Intersect(intersect_info._coord, normalized_dir, shadow_ray_intersect_info);
     if (std::abs(shadow_ray_intersect_info._t - glm::length(dir)) > 1e-4f)
     {
@@ -53,7 +54,7 @@ const glm::vec3 rendertoy::SurfaceLight::Sample_Ld(const Scene &scene, const glm
     }
     pdf = glm::dot(dir, dir) / projected_area;
     glm::vec3 normalized_dir = glm::normalize(dir);
-    IntersectInfo shadow_ray_intersect_info;
+    IntersectInfo shadow_ray_intersect_info; // TODO: 时间同步
     scene.Intersect(view_point, normalized_dir, shadow_ray_intersect_info);
     if (std::abs(shadow_ray_intersect_info._t - glm::length(dir)) > 1e-4f)
     {
@@ -102,6 +103,7 @@ const glm::vec3 rendertoy::DeltaLight::Sample_Ld(const Scene &scene, const Inter
     const glm::vec3 normalized_dir = glm::normalize(dir);
     direction = normalized_dir;
     IntersectInfo shadow_ray_intersect_info;
+    shadow_ray_intersect_info._time = intersect_info._time;
     bool intersected = scene.Intersect(intersect_info._coord, normalized_dir, shadow_ray_intersect_info);
     if (!intersected || (shadow_ray_intersect_info._t - glm::length(dir) > 1e-4f))
     {
@@ -184,6 +186,7 @@ const glm::vec3 rendertoy::HDRILight::Sample_Ld(const Scene &scene, const Inters
     }
 
     IntersectInfo shadow_ray_intersect_info;
+    shadow_ray_intersect_info._time = intersect_info._time;
     bool intersected = scene.Intersect(intersect_info._coord, direction, shadow_ray_intersect_info);
     if (!intersected)
     {

@@ -75,6 +75,9 @@ int main()
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_white;
     scene->objects()[2]->mat() = mat_white;
+    dynamic_cast<TriangleMesh *>(scene->objects()[2].get())
+        ->Animate(glm::quat(glm::mat3(1.0f)), glm::vec3(-0.5f, 0.0f, 0.0f), -0.25f, 0.25f);
+    // dynamic_cast<TriangleMesh *>(scene->objects()[2].get())->_tran = glm::vec3(0.5f, 0.0f, 0.0f);
     scene->objects()[3]->mat() = mat_emissive;
     scene->objects()[4]->mat() = mat_red;
     scene->objects()[5]->mat() = mat_green;
@@ -82,12 +85,6 @@ int main()
     scene->Init();
     INFO << "Scene inited." << std::endl;
 
-    // std::shared_ptr<ISamplable> hdr_bg = std::make_shared<ImageTexture>("/Applications/Blender.app/Contents/Resources/3.6/datafiles/studiolights/world/sunrise.exr");
-#ifdef _WIN32
-    // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("E:/rooftop_night_1k.hdr");
-#else
-    // std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ImageTexture>("/Users/tyanyuy3125/Desktop/farm_sunset_1k.hdr");
-#endif
     std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
     hdr_bg->SetSampleMethod(SampleMethod::BILINEAR);
     scene->hdr_background() = hdr_bg;
@@ -113,6 +110,7 @@ int main()
     conf.y_sample = 4;
     conf.spp = 4;
     conf.gamma = 2.4f;
+    conf.time = 0.0f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
