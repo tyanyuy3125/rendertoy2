@@ -11,8 +11,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1213
-#define BUILD_DATE "2023-11-09+16:52:03"
+#define BUILD_NUMBER 1305
+#define BUILD_DATE "2023-11-09+21:06:27"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -50,6 +50,8 @@ namespace rendertoy
     class BxDF;
     class Camera;
     class DeltaLight;
+    class Distribution1D;
+    class Distribution2D;
     class Emissive;
     class Fresnel;
     class FresnelConductor;
@@ -190,8 +192,8 @@ namespace rendertoy
     }
 
     inline const glm::vec3 SphericalDirection(float sinTheta, float cosTheta, float phi,
-                                const glm::vec3 &x, const glm::vec3 &y,
-                                const glm::vec3 &z)
+                                              const glm::vec3 &x, const glm::vec3 &y,
+                                              const glm::vec3 &z)
     {
         return sinTheta * std::cos(phi) * x + sinTheta * std::sin(phi) * y +
                cosTheta * z;
@@ -237,4 +239,34 @@ namespace rendertoy
             *v2 = glm::vec3(0, v1.z, -v1.y) / std::sqrt(v1.y * v1.y + v1.z * v1.z);
         *v3 = glm::cross(v1, *v2);
     }
+
+    template <typename Predicate>
+    int FindInterval(int size, const Predicate &pred)
+    {
+        int first = 0, len = size;
+        while (len > 0)
+        {
+            int half = len >> 1, middle = first + half;
+            if (pred(middle))
+            {
+                first = middle + 1;
+                len -= half + 1;
+            }
+            else
+                len = half;
+        }
+        return glm::clamp(first - 1, 0, size - 2);
+    }
+
+    inline float SphericalTheta(const glm::vec3 &v)
+    {
+        return std::acos(glm::clamp(v.y, -1.0f, 1.0f));
+    }
+
+    inline float SphericalPhi(const glm::vec3 &v)
+    {
+        float p = std::atan2(v.z, v.x);
+        return (p < 0) ? (p + 2 * glm::pi<float>()) : p;
+    }
+
 }

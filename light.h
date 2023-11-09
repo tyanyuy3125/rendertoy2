@@ -61,7 +61,26 @@ namespace rendertoy
         virtual const float Phi() const;
     };
 
-    
+    class HDRILight : public Light
+    {
+    private:
+        std::shared_ptr<Distribution2D> _distrib;
+        std::shared_ptr<Image> _hdri_map;
+
+    public:
+        HDRILight() = delete;
+        HDRILight(const std::string &path);
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const
+        {
+            return glm::vec3(0.0f);
+        }
+        virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const;
+        virtual const float Phi() const
+        {
+            return 1.0f;
+        }
+    };
 
     class LightSampler
     {

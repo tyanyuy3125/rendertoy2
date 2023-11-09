@@ -199,6 +199,20 @@ const rendertoy::Image rendertoy::Image::UpScale(const glm::float32 factor) cons
     return ret;
 }
 
+const rendertoy::Image rendertoy::Image::NextMipMap() const
+{
+    int new_width = _width >> 1;
+    int new_height = _height >> 1;
+    Image ret(new_width, new_height);
+    PixelShader ps = [&](const int x, const int y) -> glm::vec4
+    {
+        return (*this)(x * 2, y * 2);
+        // return 0.25f * ((*this)(x * 2, y * 2) + (*this)(x * 2 + 1, y * 2) + (*this)(x * 2, y * 2 + 1) + (*this)(x * 2 + 1, y * 2 + 1));
+    };
+    ret.PixelShade(ps);
+    return ret;
+}
+
 const glm::vec4 rendertoy::Image::Avg() const
 {
     glm::vec4 ret = glm::vec4(0.0f);

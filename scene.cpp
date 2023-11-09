@@ -11,7 +11,11 @@ void rendertoy::Scene::Init()
 {
     _objects.Construct();
     _dls_lights.clear();
-    for(const auto &light : _lights)
+    for (const auto &light : _lights)
+    {
+        _dls_lights.push_back(light);
+    }
+    for (const auto &light : _inf_lights)
     {
         _dls_lights.push_back(light);
     }
@@ -49,14 +53,14 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &origin, const glm::vec3 
 #define ALPHA_TEST
 #ifdef ALPHA_TEST
     bool ret = _objects.Intersect(origin, direction, intersect_info);
-    if(!ret)
+    if (!ret)
     {
         return ret;
     }
     else
     {
         float alpha = intersect_info._mat->albedo()->Sample(intersect_info._uv).w;
-        if(glm::linearRand(0.0f, ONE_MINUS_EPSILON) > alpha)
+        if (glm::linearRand(0.0f, ONE_MINUS_EPSILON) > alpha)
         {
             return Intersect(intersect_info._coord, direction, intersect_info);
         }
@@ -79,7 +83,7 @@ const bool rendertoy::Scene::Intersect(const glm::vec3 &p0, const glm::vec3 &p1)
 
 const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const
 {
-    if(_dls_lights.size() == 0)
+    if (_dls_lights.size() == 0)
     {
         return glm::vec3(0.0f);
     }
@@ -96,7 +100,7 @@ const glm::vec3 rendertoy::Scene::SampleLights(const IntersectInfo &intersect_in
 
 const glm::vec3 rendertoy::Scene::SampleLights(const VolumeInteraction &v_i, float &pdf, glm::vec3 &direction, bool &do_heuristic) const
 {
-    if(_dls_lights.size() == 0)
+    if (_dls_lights.size() == 0)
     {
         return glm::vec3(0.0f);
     }

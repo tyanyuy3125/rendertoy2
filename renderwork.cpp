@@ -269,8 +269,9 @@ void rendertoy::PathTracingRenderWork::Render()
                     glm::vec3 dls_mat_spectrum;
                     if (glm::dot(dls_Li, dls_Li) > 1e-5f)
                     {
+                        // return glm::vec3(1.0f, 0.0f, 0.0f);
                         dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
-                        if(do_heuristic)
+                        if (do_heuristic)
                             L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
                         else
                             L += factor * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
@@ -293,6 +294,12 @@ void rendertoy::PathTracingRenderWork::Render()
             {
                 // 光线撞击到 HDRI 背景图像 / 纯色背景等可采样管线
                 L += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
+                for (const auto &light : _render_config.scene->inf_lights())
+                {
+                    intersect_info._wo = -direction;
+                    float discard_pdf;
+                    L += factor * light->Sample_Le(origin, intersect_info, discard_pdf);
+                }
                 break;
             }
 

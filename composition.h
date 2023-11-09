@@ -45,6 +45,7 @@ namespace rendertoy
         void RayTrace(const RayTracingShader &shader, const int x_sample, const int y_sample, const int spp, const float max_noise_tolerance);
 
         const Image UpScale(const glm::float32 factor) const;
+        const Image NextMipMap() const;
 
         friend const Image ImportImageFromFile(const std::string &path);
 
