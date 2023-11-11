@@ -26,6 +26,14 @@ namespace rendertoy
         {
             return _lens_radius;
         }
+        const glm::float32 &focal_distasnce() const
+        {
+            return _focal_distance;
+        }
+        glm::float32 &focal_distasnce()
+        {
+            return _focal_distance;
+        }
         std::optional<std::function<bool(const glm::vec2 &)>> func_reject_lens_sampling = {};
         Camera() = delete;
         Camera(const glm::vec3 &origin, const glm::mat3 &rotation, const glm::float32 fov, const glm::float32 aspect_ratio);
