@@ -90,6 +90,7 @@ int main()
     scene->objects()[7]->mat() = mat_emissive;
     scene->objects()[8]->mat() = mat_plant05;
     scene->objects()[9]->mat() = mat_flowerdaisy;
+    scene->objects()[10]->mat() = mat_white;
 
     scene->Init();
     INFO << "Scene inited." << std::endl;
@@ -99,8 +100,8 @@ int main()
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{-1.2511f, 0.87042f, 3.0f}, glm::vec3{-1.2511f, 0.97042f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(37.0f), 16.0f / 9.0f);
 
     RenderConfig conf;
-    conf.width = 1280;
-    conf.height = 720;
+    conf.width = 1920;
+    conf.height = 1080;
     conf.camera = camera;
     conf.scene = scene;
     conf.x_sample = 4;
