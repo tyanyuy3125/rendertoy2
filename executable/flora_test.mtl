@@ -1,0 +1,32 @@
+# Blender 3.6.5 MTL File: 'None'
+# www.blender.org
+
+newmtl daisy_leaf
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd F:/Models/daisy leaf.png
+
+newmtl flower_daisy
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd F:/Models/flower daisy.png
+map_d F:/Models/flower daisy.png
+
+newmtl plant05
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd F:/Models/plant05.png
+map_d F:/Models/plant05.png

@@ -5,6 +5,10 @@ if(WIN32)
 endif()
 message("Build type: ${CMAKE_BUILD_TYPE}")
 
+if(MSVC)
+    add_compile_options(/wd4819)
+endif()
+
 cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 20)
 project(RenderToy2 VERSION 0.1.0 LANGUAGES C CXX)

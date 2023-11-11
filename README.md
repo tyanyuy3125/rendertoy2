@@ -4,6 +4,9 @@ As the final project of Advanced Computer Graphics (Fall 2023, IIIS, Tsinghua Un
 
 RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算机图形学》的期末大作业，也是初代 RenderToy 完全重构的迭代版本。
 
+## Gallery
+<img src="./gallery/final1.png">
+
 ## Implemented
 
 ### Rendering Techniques

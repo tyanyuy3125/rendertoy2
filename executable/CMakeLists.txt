@@ -2,6 +2,7 @@ add_executable(CornellBox cornellbox.cpp)
 add_executable(Alpha alpha.cpp)
 add_executable(Fog fog.cpp)
 add_executable(HDRI hdri.cpp)
+add_executable(Final1 final1.cpp)
 
 target_link_libraries(CornellBox PRIVATE RenderToy2)
 target_include_directories(CornellBox PRIVATE ../)
@@ -15,12 +16,16 @@ target_include_directories(Fog PRIVATE ../)
 target_link_libraries(HDRI PRIVATE RenderToy2)
 target_include_directories(HDRI PRIVATE ../)
 
+target_link_libraries(Final1 PRIVATE RenderToy2)
+target_include_directories(Final1 PRIVATE ../)
+
 if(WIN32)
-file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
+set(SOURCE_FILE alpha.obj alpha.png ground-roughness.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr daisyleaf.png flowerdaisy.png plant05.png flora_test.obj final1.obj concrete.png concrete2.png chair.jpg)
+file(COPY ${SOURCE_FILE}
      DESTINATION ${CMAKE_BINARY_DIR}/executable/Debug)
-file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
+file(COPY ${SOURCE_FILE}
      DESTINATION ${CMAKE_BINARY_DIR}/executable/Release)
 else()
-file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
+file(COPY ${SOURCE_FILE}
      DESTINATION ${CMAKE_BINARY_DIR}/executable)
 endif()
