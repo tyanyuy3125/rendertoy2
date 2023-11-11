@@ -15,7 +15,9 @@
 #include "medium.h"
 #include "phase.h"
 
+#ifndef OIDN_NOT_FOUND
 #include <OpenImageDenoise/oidn.hpp>
+#endif // OIDN_NOT_FOUND
 #include <chrono>
 #include <cmath>
 
@@ -89,7 +91,7 @@ void rendertoy::DepthBufferRenderWork::Render()
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
         if (_render_config.scene->Intersect(origin, direction, intersect_info))
         {
-            return glm::vec4(glm::vec3((intersect_info._t - _render_config.near) / (_render_config.far - _render_config.near)), 1.0f);
+            return glm::vec4(glm::vec3((intersect_info._t - _render_config._near) / (_render_config._far - _render_config._near)), 1.0f);
         }
         return glm::vec4(1.0f);
     };
@@ -271,6 +273,7 @@ void rendertoy::PathTracingRenderWork::Render()
                     {
                         // return glm::vec3(1.0f, 0.0f, 0.0f);
                         dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
+                        pdf_scattering = bsdf->Pdf(intersect_info._wo, dls_direction);
                         if (do_heuristic)
                             L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
                         else
@@ -339,6 +342,7 @@ void rendertoy::PathTracingRenderWork::Render()
     _stat.time_elapsed = elapsed_time.count();
 }
 
+#ifndef OIDN_NOT_FOUND
 void rendertoy::ProductionalRenderWork::Render()
 {
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -372,3 +376,4 @@ void rendertoy::ProductionalRenderWork::Render()
     std::chrono::duration<double> elapsed_time = end_time - start_time;
     _stat.time_elapsed = elapsed_time.count();
 }
+#endif // OIDN_NOT_FOUND

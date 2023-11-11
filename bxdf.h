@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "rendertoy_internal.h"
 
 namespace rendertoy

@@ -135,15 +135,7 @@ const float rendertoy::DeltaLight::Phi() const
 rendertoy::HDRILight::HDRILight(const std::string &path)
 {
     Image raw_image(ImportImageFromFile(path));
-    // while (true)
-    // {
-    //     if (raw_image.width() <= 512)
-    //     {
-    //         break;
-    //     }
-    //     raw_image = raw_image.NextMipMap();
-    // }
-    float weights[raw_image.width() * raw_image.height()];
+    float *weights = new float[raw_image.width() * raw_image.height()];
     for (int v = 0; v < raw_image.height(); ++v)
     {
         float sinTheta = std::sin(glm::pi<float>() * float(v) / float(raw_image.height()));
@@ -155,6 +147,7 @@ rendertoy::HDRILight::HDRILight(const std::string &path)
     }
     _hdri_map = std::make_shared<Image>(ImportImageFromFile(path));
     _distrib = std::make_shared<Distribution2D>(&weights[0], raw_image.width(), raw_image.height());
+    delete weights;
 }
 
 const glm::vec3 rendertoy::HDRILight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const

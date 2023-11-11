@@ -14,8 +14,13 @@ target_include_directories(Fog PRIVATE ../)
 
 target_link_libraries(HDRI PRIVATE RenderToy2)
 target_include_directories(HDRI PRIVATE ../)
-target_link_libraries(HDRI PRIVATE OpenImageIO)
-target_include_directories(HDRI PRIVATE ../)
 
+if(WIN32)
+file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
+     DESTINATION ${CMAKE_BINARY_DIR}/executable/Debug)
+file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
+     DESTINATION ${CMAKE_BINARY_DIR}/executable/Release)
+else()
 file(COPY alpha.obj alpha.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr
      DESTINATION ${CMAKE_BINARY_DIR}/executable)
+endif()

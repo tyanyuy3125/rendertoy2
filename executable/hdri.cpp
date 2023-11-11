@@ -1,7 +1,5 @@
 #include <iostream>
 #include <memory>
-#include <OpenImageIO/imageio.h>
-#include <OpenImageIO/imagebufalgo.h>
 
 #include "rendertoy.h"
 #include "logger.h"
@@ -58,8 +56,8 @@ int main()
     std::shared_ptr<ISamplableColor> tex_green = std::make_shared<ColorTexture>(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     std::shared_ptr<ISamplableNumerical> emissive_strength = std::make_shared<ConstantNumerical>(10.0f);
     std::shared_ptr<ISamplableNumerical> diffuse_roughness = std::make_shared<ConstantNumerical>(45.0f);
-    std::shared_ptr<ISamplableNumerical> metal_roughness = std::make_shared<ConstantNumerical>(0.05f);
-    std::shared_ptr<ISamplableNumerical> metal_roughness_2 = std::make_shared<ConstantNumerical>(0.05f);
+    std::shared_ptr<ISamplableNumerical> metal_roughness = std::make_shared<ConstantNumerical>(0.01f);
+    std::shared_ptr<ISamplableNumerical> metal_roughness_2 = std::make_shared<ConstantNumerical>(0.01f);
     std::shared_ptr<IMaterial> mat_white = std::make_shared<DiffuseBSDF>(tex_white, diffuse_roughness);
     std::shared_ptr<IMaterial> mat_alpha = std::make_shared<DiffuseBSDF>(tex_alpha, diffuse_roughness);
     std::shared_ptr<IMaterial> mat_red = std::make_shared<DiffuseBSDF>(tex_red, diffuse_roughness);

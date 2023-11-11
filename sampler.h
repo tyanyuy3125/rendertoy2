@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <span>
+#include <memory>
 
 #include "rendertoy_internal.h"
 

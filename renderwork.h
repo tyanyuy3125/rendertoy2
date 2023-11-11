@@ -19,8 +19,8 @@ namespace rendertoy
         std::shared_ptr<Scene> scene;
 
         // Depth buffer
-        glm::float32 near = 0.1f;
-        glm::float32 far = 100.0f;
+        glm::float32 _near = 0.1f;
+        glm::float32 _far = 100.0f;
 
         // Antialiasing
         uint32_t x_sample = 4;
@@ -97,7 +97,7 @@ namespace rendertoy
         PathTracingRenderWork(const RenderConfig &render_config)
         : IRenderWork(render_config) {}
     };
-
+#ifndef OIDN_NOT_FOUND
     class ProductionalRenderWork : public IRenderWork
     {
         CLASS_METADATA_MARK(ProductionalRenderWork)
@@ -106,4 +106,5 @@ namespace rendertoy
         ProductionalRenderWork(const RenderConfig &render_config)
         : IRenderWork(render_config) {}
     };
+#endif // OIDN_NOT_FOUND
 }
