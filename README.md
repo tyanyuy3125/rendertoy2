@@ -6,6 +6,7 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 
 ## Gallery
 <img src="./gallery/final1.png">
+<img src="./gallery/final2.png">
 
 ## Implemented
 

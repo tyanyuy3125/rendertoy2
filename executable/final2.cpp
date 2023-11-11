@@ -50,6 +50,7 @@ int main()
     scene->objects()[1]->mat() = mat_bones;
     scene->objects()[2]->mat() = mat_cactus;
     scene->objects()[3]->mat() = mat_principled;
+    scene->objects()[4]->mat() = mat_desert;
 
     scene->inf_lights().push_back(std::make_shared<HDRILight>("./desert_morning.hdr"));
 
@@ -59,8 +60,8 @@ int main()
     scene->hdr_background() = hdr_bg;
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{1.2601f, 0.10336f, 1.2215f}, glm::vec3{-1.275, 0.4832f, -1.424f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(21.0f), 16.0f / 9.0f);
-    camera->lens_radius() = 0.005f;
-    camera->focal_distasnce() = 1.92f;
+    camera->lens_radius() = 0.01f;
+    camera->focal_distasnce() = 1.93f;
 
     RenderConfig conf;
     conf.width = 1280;
@@ -69,9 +70,9 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 1;
+    conf.spp = 32;
     conf.gamma = 2.2f;
-    PathTracingRenderWork renderwork(conf);
+    ProductionalRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(false);
 #ifdef _WIN32
