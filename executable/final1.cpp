@@ -48,6 +48,10 @@ int main()
     std::shared_ptr<ISamplableNumerical> emissive_strength = std::make_shared<ConstantNumerical>(2.0f);
     std::shared_ptr<IMaterial> mat_emissive = std::make_shared<Emissive>(tex_white, emissive_strength);
 
+    std::shared_ptr<ISamplableColor> tex_pot = std::make_shared<ImageTexture>("./pot.jpg");
+    std::shared_ptr<ISamplableColor> tex_pot_r = std::make_shared<ImageTexture>("./pot_r.jpg");
+    std::shared_ptr<ISamplableNumerical> roughness_pot = std::make_shared<Brightness>(tex_pot_r);
+
     std::shared_ptr<IMaterial> mat_principled = std::make_shared<PrincipledBSDF>(
         tex_ground,
         std::make_shared<ConstantNumerical>(0.25f),
@@ -80,6 +84,22 @@ int main()
         std::make_shared<ConstantNumerical>(0.0f),
         std::make_shared<ConstantNumerical>(0.2f));
 
+    std::shared_ptr<IMaterial> mat_principled3 = std::make_shared<PrincipledBSDF>(
+        tex_pot,
+        std::make_shared<ConstantNumerical>(0.2f),
+        std::make_shared<ConstantNumerical>(1.333f),
+        roughness_pot,
+        std::make_shared<ConstantNumerical>(1.0f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(1.0f),
+        std::make_shared<ConstantNumerical>(0.5f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.0f),
+        true,
+        std::make_shared<ConstantNumerical>(0.0f),
+        std::make_shared<ConstantNumerical>(0.2f));
+
     scene->objects()[0]->mat() = mat_metal;
     scene->objects()[1]->mat() = mat_wall;
     scene->objects()[2]->mat() = mat_principled;
@@ -91,6 +111,7 @@ int main()
     scene->objects()[8]->mat() = mat_plant05;
     scene->objects()[9]->mat() = mat_flowerdaisy;
     scene->objects()[10]->mat() = mat_white;
+    scene->objects()[11]->mat() = mat_principled3;
 
     scene->Init();
     INFO << "Scene inited." << std::endl;
@@ -112,7 +133,7 @@ int main()
     renderwork.Render();
     Image result = renderwork.GetResult(false);
 #ifdef _WIN32
-    result.Export("E:/test.png");
+    result.Export("E:/test3.png");
 #else
     result.Export("/Users/tyanyuy3125/Pictures/test.png");
 #endif // _WIN32

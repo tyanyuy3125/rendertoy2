@@ -20,7 +20,7 @@ target_link_libraries(Final1 PRIVATE RenderToy2)
 target_include_directories(Final1 PRIVATE ../)
 
 if(WIN32)
-set(SOURCE_FILE alpha.obj alpha.png ground-roughness.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr daisyleaf.png flowerdaisy.png plant05.png flora_test.obj final1.obj concrete.png concrete2.png chair.jpg)
+set(SOURCE_FILE alpha.obj alpha.png ground-roughness.png lens_mask.png test.png fog.obj hdri.obj hdri.hdr daisyleaf.png flowerdaisy.png plant05.png flora_test.obj final1.obj concrete.png concrete2.png chair.jpg pot.jpg pot_r.jpg)
 file(COPY ${SOURCE_FILE}
      DESTINATION ${CMAKE_BINARY_DIR}/executable/Debug)
 file(COPY ${SOURCE_FILE}
