@@ -3,6 +3,8 @@
 
 #include "primitive.h"
 #include "logger.h"
+#include "material.h"
+#include "texture.h"
 
 void rendertoy::TriangleMesh::GetCurrentAnimationState(const float time, glm::quat &rot, glm::vec3 &tran) const
 {
@@ -31,6 +33,11 @@ const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm
     if (intersect_info._mat == nullptr)
     {
         intersect_info._mat = _mat;
+    }
+    if (_mat->bump())
+    {
+        intersect_info._shading_normal += glm::vec3(_mat->bump()->Sample(intersect_info._uv));
+        intersect_info._shading_normal = glm::normalize(intersect_info._shading_normal);
     }
     return ret;
 }

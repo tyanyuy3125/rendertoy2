@@ -11,10 +11,11 @@ namespace rendertoy
     class IMaterial
     {
         MATERIAL_SOCKET(albedo, Color);
+        MATERIAL_SOCKET(bump, Color);
 
     public:
         IMaterial(const std::shared_ptr<ISamplableColor> &albedo)
-            : _albedo(albedo) {}
+            : _albedo(albedo), _bump(nullptr) {}
         /// @brief
         /// @param uv
         /// @note Plane light should not be IES-like, so taking uv is enough.
