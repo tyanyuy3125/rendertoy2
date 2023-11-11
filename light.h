@@ -78,7 +78,7 @@ namespace rendertoy
         virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const;
         virtual const float Phi() const
         {
-            return 1.0f;
+            return 1.0f; // TODO: 不符合实际
         }
     };
 

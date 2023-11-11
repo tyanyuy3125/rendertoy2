@@ -16,6 +16,7 @@ namespace rendertoy
         glm::vec3 _shading_normal;
         std::shared_ptr<IMaterial> _mat;
         Primitive *_primitive;
+        glm::float32 _time = 0.0f;
 
         const glm::mat3 GenerateSurfaceCoordinates() const;
     };

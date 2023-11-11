@@ -187,6 +187,9 @@ void rendertoy::PathTracingRenderWork::Render()
         glm::vec3 L = glm::vec3(0.0f);
         glm::vec3 origin, direction;
         IntersectInfo intersect_info;
+        // 生成采样时间用于实现动态模糊
+        // intersect_info._time = -0.1f;
+        intersect_info._time = glm::linearRand(-0.5f, 0.5f) * _render_config.exposure + _render_config.time;
         BxDFType sampled_flag;
         glm::vec3 spectrum;
         float pdf_next, pdf_light, pdf_scattering;

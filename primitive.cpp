@@ -4,14 +4,57 @@
 #include "primitive.h"
 #include "logger.h"
 
-const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
+void rendertoy::TriangleMesh::GetCurrentAnimationState(const float time, glm::quat &rot, glm::vec3 &tran) const
 {
-    bool ret = _triangles.Intersect(origin, direction, intersect_info);
-    if(intersect_info._mat == nullptr)
+    float time_factor = (time - _time_from) / (_time_to - _time_from);
+    rot = glm::slerp(_rot_from, _rot_to, time_factor);
+    tran = glm::mix(_tran_from, _tran_to, time_factor);
+}
+
+const bool rendertoy::TriangleMesh::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const
+{
+    bool ret;
+    if (_is_animated)
+    {
+        glm::quat rot;
+        glm::vec3 tran;
+        GetCurrentAnimationState(intersect_info._time, rot, tran);
+        glm::mat3 _rot = glm::toMat3(rot);
+        glm::vec3 local_origin = glm::transpose(_rot) * origin - glm::transpose(_rot) * tran;
+        glm::vec3 local_dir = glm::transpose(_rot) * direction;
+        ret = _triangles.Intersect(local_origin, local_dir, intersect_info);
+    }
+    else
+    {
+        ret = _triangles.Intersect(origin, direction, intersect_info);
+    }
+    if (intersect_info._mat == nullptr)
     {
         intersect_info._mat = _mat;
     }
     return ret;
+}
+
+void rendertoy::TriangleMesh::Animate(const glm::quat &rot_to, const glm::vec3 &tran_to, const glm::float32 time_from, const glm::float32 time_to)
+{
+    _rot_to = rot_to;
+    _tran_to = tran_to;
+    _time_from = time_from;
+    _time_to = time_to;
+    _is_animated = true;
+
+    // Expand current BVH to contain any rotations
+    float radius = glm::length(_bbox.Diagonal()) / 2.0f;
+    glm::vec3 new_pmin = _bbox.GetCenter() - glm::vec3(radius);
+    glm::vec3 new_pmax = _bbox.GetCenter() + glm::vec3(radius);
+    _bbox = BBox(new_pmin, new_pmax);
+
+    // Translate the BBox
+    glm::vec3 new_new_pmin = new_pmin + tran_to;
+    glm::vec3 new_new_pmax = new_pmax + tran_to;
+
+    // Union two BBox
+    _bbox.Union(BBox(new_new_pmin, new_new_pmax));
 }
 
 const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
@@ -21,7 +64,7 @@ const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
 
 const float rendertoy::TriangleMesh::GetArea() const
 {
-    CRIT << "Not implemented." <<std::endl;
+    CRIT << "Not implemented." << std::endl;
     return 0.0f;
 }
 
@@ -81,7 +124,7 @@ const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
 
 const float rendertoy::UVSphere::GetArea() const
 {
-    CRIT << "Not implemented." <<std::endl;
+    CRIT << "Not implemented." << std::endl;
     return 0.0f;
 }
 
@@ -156,7 +199,7 @@ const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm:
 {
     float u = glm::linearRand<float>(0.0f, 1.0f);
     float v = glm::linearRand<float>(0.0f, 1.0f);
-    if(u + v > 1.0f)
+    if (u + v > 1.0f)
     {
         u = 1.0f - u;
         v = 1.0f - v;
@@ -169,7 +212,7 @@ const void rendertoy::Triangle::GenerateSamplePointOnSurface(glm::vec2 &uv, glm:
 const float rendertoy::Triangle::Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const
 {
     float projected_area = std::abs(glm::dot(this->GetNormal(uv), glm::normalize(observation_to_primitive))) * GetArea();
-    if(std::abs(projected_area) < 1e-4)
+    if (std::abs(projected_area) < 1e-4)
     {
         return 0.0f;
     }

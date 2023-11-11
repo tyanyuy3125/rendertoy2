@@ -6,24 +6,36 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 
 ## Implemented
 
+### Rendering Techniques
 * BSDF Path Tracing
-* Principled BSDF
+* Direct Light Sampling (power weighted)
+* Approximated Volume Rendering (sampling light source(s) only, ignoring scattering)
+* Motion blur
+* Depth of Field
+* HDRI Map (importance sampled)
+### Sampling Strategies
 * Adaptive Sampling
-* SAH-BVH
-* MIS-DLS
-* Power Light Sampling (using alias table)
+* Multiple Importance Sampling
+* Inverse Transform Methods
+    * Alias Sampling
+    * Rejection Sampling
+    * ...
+### Material
 * Lambertian BRDF
 * Oren-Layar BRDF
 * Specular BRDF
 * Transmissive BSDF
+* Principled BSDF
 * Alpha Test (testing A channel of RGBA, if given)
-* Depth of Field
-* Custom aperture (rejection sampling)
 * Fresnel
-* Denoiser using Intel® Open Image Denoise
 * Beckmann microfacet distribution
 * Texture Mapping (similar to pbrt and Cycles, use `ISamplable<T>` to abstract the texture type)
+### Geometry
+* SAH-BVH
+### Post Processing & Visual Effects
 * Tone mapping
+* Custom aperture (rejection sampled)
+* Denoiser using Intel® Open Image Denoise
 * Programmable shader to manipulate pixels on images
 * Layer-based image composition
 * Bitmap font watermark

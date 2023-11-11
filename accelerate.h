@@ -222,6 +222,7 @@ namespace rendertoy
         const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
         {
             IntersectInfo temp_intersect_info;
+            temp_intersect_info._time = intersect_info._time; // 时间要保持一致
             int closest_index = -1;
 // #define DISABLE_BVH
 #ifdef DISABLE_BVH // For debug purposes.
