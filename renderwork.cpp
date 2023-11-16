@@ -196,8 +196,9 @@ void rendertoy::PathTracingRenderWork::Render()
         bool specular_bounce = false;
         float eta = 1.0f;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        // std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
-
+        std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
+        // std::shared_ptr<Medium> medium = _render_config.scene->_global_medium;
+        int medium_depth = 0;
         for (int depth = 0; depth < 8; ++depth)
         {
             bool intersected = _render_config.scene->Intersect(origin, direction, intersect_info);
@@ -206,107 +207,108 @@ void rendertoy::PathTracingRenderWork::Render()
                 intersect_info._t = 1e6f;
             }
 
-            // VolumeInteraction volume_intersect_info;
-            // factor *= medium->Sample(origin, direction, intersect_info._t, volume_intersect_info);
-            // if (glm::length2(factor) < 1e-10f)
-            // {
-            //     break;
-            // }
-
-            // if (volume_intersect_info._valid)
-            // {
-            //     float volume_dls_pdf, volume_scattering_pdf;
-            //     glm::vec3 volume_dls_direction;
-            //     bool do_heuristic = true;
-            //     glm::vec3 volume_dls_Ld = _render_config.scene->SampleLights(volume_intersect_info, volume_dls_pdf, volume_dls_direction, do_heuristic);
-            //     if (glm::dot(volume_dls_Ld, volume_dls_Ld) > 1e-5f)
-            //     {
-            //         volume_scattering_pdf = volume_intersect_info._phase_func->p(volume_intersect_info._wo, volume_dls_direction);
-            //         glm::vec3 volume_dls_spectrum(volume_scattering_pdf);
-            //         if(do_heuristic)
-            //             L += factor * PowerHeuristic(1, volume_dls_pdf, 1, volume_scattering_pdf) * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
-            //         else
-            //             L += factor * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
-            //     }
-
-            //     // glm::vec3 wo = -direction, wi;
-            //     // wi = volume_intersect_info._phase_func->Sample_p(wo, &pdf_next);
-            //     // origin = volume_intersect_info._coord;
-            //     // direction = wi;
-            //     // specular_bounce = false;
-            //     // continue;
-            // }
-
-            if (intersected)
+            VolumeInteraction volume_interaction;
+            if (medium)
             {
-                // 如果当前表面是发光表面，则进行直接光源采样的BSDF采样或者亮度项计算
-                auto surface_light = intersect_info._primitive->GetSurfaceLight();
-                if (surface_light)
+                factor *= medium->Sample(origin, direction, intersect_info._t, volume_interaction);
+            }
+
+            if (volume_interaction._valid)
+            {
+                ++medium_depth;
+                float volume_dls_pdf, volume_scattering_pdf;
+                glm::vec3 volume_dls_direction;
+                bool do_heuristic = true;
+                glm::vec3 volume_dls_Ld = _render_config.scene->SampleLights(volume_interaction, volume_dls_pdf, volume_dls_direction, do_heuristic);
+                if (glm::dot(volume_dls_Ld, volume_dls_Ld) > 1e-5f)
                 {
-                    glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
-                    if (depth == 0 || specular_bounce)
-                    {
-                        L += factor * Le;
-                    }
+                    volume_scattering_pdf = volume_interaction._phase_func->p(volume_interaction._wo, volume_dls_direction);
+                    glm::vec3 volume_dls_spectrum(volume_scattering_pdf);
+                    if (do_heuristic)
+                        L += factor * PowerHeuristic(1, volume_dls_pdf, 1, volume_scattering_pdf) * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
                     else
-                    {
-                        L += factor * PowerHeuristic(1, pdf_next, 1, pdf_light) * Le;
-                    }
+                        L += factor * volume_dls_spectrum * volume_dls_Ld / volume_dls_pdf;
                 }
 
-                // 对当前材质的 BSDF 进行采样
-                std::unique_ptr<BSDF> bsdf = intersect_info._mat->GetBSDF(intersect_info);
-
-                // 更新采样光线
-                origin = intersect_info._coord;
-                spectrum = bsdf->Sample_f(intersect_info._wo, &direction, &pdf_next, BSDF_ALL, &sampled_flag);
-
-                // 更新直接光源采样项
-                // 在直接光源采样中，对光源进行采样
-                // 如果当前光线打到的表面是 SPECULAR 材质，那么以下步骤是不必要的。因为mat_bsdf = 0.
-                if (bsdf->NumComponents(BxDFType(BSDF_ALL & ~BSDF_SPECULAR)) > 0)
-                {
-                    bool consider_normal = !bsdf->IsTransmissive();
-                    // bool consider_normal = true;
-                    glm::vec3 dls_direction;
-                    bool do_heuristic = true;
-                    glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, consider_normal, do_heuristic);
-                    glm::vec3 dls_mat_spectrum;
-                    if (glm::dot(dls_Li, dls_Li) > 1e-5f)
-                    {
-                        // return glm::vec3(1.0f, 0.0f, 0.0f);
-                        dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
-                        pdf_scattering = bsdf->Pdf(intersect_info._wo, dls_direction);
-                        if (do_heuristic)
-                            L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
-                        else
-                            L += factor * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
-                    }
-                }
-
-                // 在引入微表面采样以后，由于不再采用均匀半球或者余弦采样方法，所以可能会导致采到概率密度为0的部分，需要将其剔除。
-                // 如果不进行下述剔除，可能由于数值计算误差产生Inf点或者NaN点。
-                if (spectrum == glm::zero<glm::vec3>() || pdf_next == 0.0f)
-                {
-                    break;
-                }
-
-                // 更新当前表面是否为镜面
-                specular_bounce = BSDF::IsSpecular(sampled_flag);
-                // 更新因子项。在引入透射以后由于法线反转，所以需要引入abs。
-                factor = (spectrum / pdf_next) * std::abs(glm::dot(direction, intersect_info._geometry_normal)) * factor;
+                glm::vec3 wo = -direction, wi;
+                wi = volume_interaction._phase_func->Sample_p(wo, &pdf_next);
+                origin = volume_interaction._coord;
+                direction = wi;
+                specular_bounce = false;
             }
             else
             {
-                // 光线撞击到 HDRI 背景图像 / 纯色背景等可采样管线
-                L += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
-                for (const auto &light : _render_config.scene->inf_lights())
+                if (intersected)
                 {
-                    intersect_info._wo = -direction;
-                    float discard_pdf;
-                    L += factor * light->Sample_Le(origin, intersect_info, discard_pdf);
+                    // 如果当前表面是发光表面，则进行直接光源采样的BSDF采样或者亮度项计算
+                    auto surface_light = intersect_info._primitive->GetSurfaceLight();
+                    if (surface_light)
+                    {
+                        glm::vec3 Le = surface_light->Sample_Le(origin, intersect_info, pdf_light);
+                        if (depth == 0 || specular_bounce)
+                        {
+                            L += factor * Le;
+                        }
+                        else
+                        {
+                            L += factor * PowerHeuristic(1, pdf_next, 1, pdf_light) * Le;
+                        }
+                    }
+
+                    // 对当前材质的 BSDF 进行采样
+                    std::unique_ptr<BSDF> bsdf = intersect_info._mat->GetBSDF(intersect_info);
+
+                    // 更新采样光线
+                    origin = intersect_info._coord;
+                    spectrum = bsdf->Sample_f(intersect_info._wo, &direction, &pdf_next, BSDF_ALL, &sampled_flag);
+
+                    // 更新直接光源采样项
+                    // 在直接光源采样中，对光源进行采样
+                    // 如果当前光线打到的表面是 SPECULAR 材质，那么以下步骤是不必要的。因为mat_bsdf = 0.
+                    if (bsdf->NumComponents(BxDFType(BSDF_ALL & ~BSDF_SPECULAR)) > 0)
+                    {
+                        bool consider_normal = !bsdf->IsTransmissive();
+                        // bool consider_normal = true;
+                        glm::vec3 dls_direction;
+                        bool do_heuristic = true;
+                        glm::vec3 dls_Li = _render_config.scene->SampleLights(intersect_info, pdf_light, dls_direction, consider_normal, do_heuristic);
+                        glm::vec3 dls_mat_spectrum;
+                        if (glm::dot(dls_Li, dls_Li) > 1e-5f)
+                        {
+                            // return glm::vec3(1.0f, 0.0f, 0.0f);
+                            dls_mat_spectrum = bsdf->f(intersect_info._wo, dls_direction);
+                            pdf_scattering = bsdf->Pdf(intersect_info._wo, dls_direction);
+                            if (do_heuristic)
+                                L += factor * PowerHeuristic(1, pdf_light, 1, pdf_scattering) * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
+                            else
+                                L += factor * std::abs(glm::dot(dls_direction, intersect_info._geometry_normal)) * dls_mat_spectrum * dls_Li / pdf_light;
+                        }
+                    }
+
+                    // 在引入微表面采样以后，由于不再采用均匀半球或者余弦采样方法，所以可能会导致采到概率密度为0的部分，需要将其剔除。
+                    // 如果不进行下述剔除，可能由于数值计算误差产生Inf点或者NaN点。
+                    if (spectrum == glm::zero<glm::vec3>() || pdf_next == 0.0f)
+                    {
+                        break;
+                    }
+
+                    // 更新当前表面是否为镜面
+                    specular_bounce = BSDF::IsSpecular(sampled_flag);
+                    // 更新因子项。在引入透射以后由于法线反转，所以需要引入abs。
+                    factor = (spectrum / pdf_next) * std::abs(glm::dot(direction, intersect_info._geometry_normal)) * factor;
                 }
-                break;
+                else
+                {
+                    // 光线撞击到 HDRI 背景图像 / 纯色背景等可采样管线
+                    L += factor * glm::vec3(_render_config.scene->hdr_background()->Sample(GetUVOnSkySphere(direction)));
+                    for (const auto &light : _render_config.scene->inf_lights())
+                    {
+                        intersect_info._wo = -direction;
+                        float discard_pdf;
+                        L += factor * light->Sample_Le(origin, intersect_info, discard_pdf);
+                    }
+                    break;
+                }
             }
 
             // 俄罗斯轮盘赌剪枝
@@ -380,3 +382,8 @@ void rendertoy::ProductionalRenderWork::Render()
     _stat.time_elapsed = elapsed_time.count();
 }
 #endif // OIDN_NOT_FOUND
+
+void rendertoy::AORenderWork::Render()
+{
+    // TODO: Implement AORenderWork
+}

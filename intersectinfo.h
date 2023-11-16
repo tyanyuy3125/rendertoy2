@@ -25,7 +25,7 @@ namespace rendertoy
     {
         glm::vec3 _wo;
         glm::vec3 _coord;
-        bool _valid = false;;
+        bool _valid = false;
 
         std::shared_ptr<PhaseFunction> _phase_func;
     };

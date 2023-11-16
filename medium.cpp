@@ -1,5 +1,6 @@
 #include "medium.h"
 #include "intersectinfo.h"
+#include "logger.h"
 
 const glm::vec3 rendertoy::HomogeneousMedium::Tr(const float t) const
 {
@@ -10,7 +11,7 @@ const glm::vec3 rendertoy::HomogeneousMedium::Sample(const glm::vec3 &o, const g
 {
     v_i._valid = false;
     glm::vec3 sigma_t = _sigma_a + _sigma_s;
-    float dist = -std::log(1 - glm::linearRand(0.0f, 1.0f)) / sigma_t[0];
+    float dist = -std::log(1.0f - glm::linearRand(0.0f, 1.0f)) / sigma_t[0];
     float t = std::min(dist, tmax);
     bool sampledMedium = t < tmax;
     if (sampledMedium)

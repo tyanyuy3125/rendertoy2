@@ -17,10 +17,13 @@ namespace rendertoy
         std::vector<std::shared_ptr<Light>> _lights;
         std::vector<std::shared_ptr<Light>> _inf_lights;
         std::shared_ptr<LightSampler> _light_sampler;
+        
 
         MATERIAL_SOCKET(hdr_background, Color);
 
     public:
+        std::shared_ptr<Medium> _global_medium; // TODO: Temporary
+
         Scene() = default;
         Scene(const Scene &) = delete;
 

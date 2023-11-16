@@ -104,8 +104,19 @@ namespace rendertoy
         CLASS_METADATA_MARK(ProductionalRenderWork)
     public:
         virtual void Render();
+        ProductionalRenderWork() = delete;
         ProductionalRenderWork(const RenderConfig &render_config)
         : IRenderWork(render_config) {}
     };
 #endif // OIDN_NOT_FOUND
+
+    class AORenderWork : public IRenderWork
+    {
+        CLASS_METADATA_MARK(AORenderWork)
+    public:
+        virtual void Render();
+        AORenderWork() = delete;
+        AORenderWork(const RenderConfig &render_config)
+        : IRenderWork(render_config) {}
+    };
 }

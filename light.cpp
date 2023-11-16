@@ -149,7 +149,7 @@ rendertoy::HDRILight::HDRILight(const std::string &path)
     }
     _hdri_map = std::make_shared<Image>(ImportImageFromFile(path));
     _distrib = std::make_shared<Distribution2D>(&weights[0], raw_image.width(), raw_image.height());
-    delete weights;
+    delete[] weights;
 }
 
 const glm::vec3 rendertoy::HDRILight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const

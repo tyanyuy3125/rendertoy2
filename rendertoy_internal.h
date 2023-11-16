@@ -13,8 +13,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1419
-#define BUILD_DATE "2023-11-12+00:19:25"
+#define BUILD_NUMBER 1463
+#define BUILD_DATE "2023-11-16+02:04:00"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -71,6 +71,7 @@ namespace rendertoy
     class LambertianReflection;
     class Light;
     class LightSampler;
+    class Medium;
     class MicrofacetDistribution;
     class MicrofacetReflection;
     class OrenNayer;

@@ -70,10 +70,10 @@ endif()
 # target_link_libraries(RenderToy2 PRIVATE OSL)
 
 find_package(OpenImageDenoise)
-if(YourPackage_FOUND)
+if(OpenImageDenoise_FOUND)
+    message("OIDN found, enabling ProductionalRenderWork")
     target_link_libraries(RenderToy2 PRIVATE OpenImageDenoise)
 else()
-    # 如果找不到包，调用宏
     message(WARNING "OIDN not found, disabling ProductionRenderWork...")
     add_definitions(-DOIDN_NOT_FOUND)
 endif()
