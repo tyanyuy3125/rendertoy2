@@ -78,6 +78,9 @@ else()
     add_definitions(-DOIDN_NOT_FOUND)
 endif()
 
+add_subdirectory(contrib/bvh)
+target_link_libraries(RenderToy2 PUBLIC bvh)
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

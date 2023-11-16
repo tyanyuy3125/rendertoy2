@@ -1,0 +1,3 @@
+[submodule "contrib/bvh"]
+	path = contrib/bvh
+	url = https://github.com/madmann91/bvh.git
