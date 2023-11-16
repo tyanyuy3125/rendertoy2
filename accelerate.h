@@ -11,6 +11,18 @@
 #include "intersectinfo.h"
 #include "logger.h"
 
+#ifdef USE_EXT_BVH
+#include <bvh/v2/bvh.h>
+#include <bvh/v2/vec.h>
+#include <bvh/v2/ray.h>
+#include <bvh/v2/node.h>
+#include <bvh/v2/default_builder.h>
+#include <bvh/v2/thread_pool.h>
+#include <bvh/v2/executor.h>
+#include <bvh/v2/stack.h>
+#include <bvh/v2/tri.h>
+#endif // USE_EXT_BVH
+
 namespace rendertoy
 {
     class BBox
@@ -67,6 +79,95 @@ namespace rendertoy
     };
 #endif // USE_SAH
 
+#ifdef USE_EXT_BVH
+
+    template <typename AccelerableObject, std::enable_if_t<has_bounding_box<AccelerableObject>::value, bool> _ = true>
+    class BVH
+    {
+        using Scalar = float;
+        using BVH_BBox = bvh::v2::BBox<Scalar, 3>;
+        using Node = bvh::v2::Node<Scalar, 3>;
+        using Vec3 = bvh::v2::Vec<Scalar, 3>;
+        using Bvh = bvh::v2::Bvh<Node>;
+        using Ray = bvh::v2::Ray<Scalar, 3>;
+
+        static const Vec3 Vec3Convert(const glm::vec3 &vec)
+        {
+            return Vec3(vec.x, vec.y, vec.z);
+        }
+
+        static const BVH_BBox BBoxConvert(const BBox &bbox)
+        {
+            return BVH_BBox(Vec3Convert(bbox._pmin), Vec3Convert(bbox._pmax));
+        }
+
+    private:
+    public:
+        BVH() = default;
+        BVH(const BVH &) = delete;
+
+        std::vector<std::shared_ptr<AccelerableObject>> objects;
+        std::vector<std::shared_ptr<AccelerableObject>> precomputed_objects;
+        Bvh internal_bvh;
+        void Construct()
+        {
+            bvh::v2::ThreadPool thread_pool;
+            bvh::v2::ParallelExecutor executor(thread_pool);
+
+            std::vector<BVH_BBox> bboxes(objects.size());
+            std::vector<Vec3> centers(objects.size());
+            executor.for_each(0, objects.size(), [&](size_t begin, size_t end)
+                              {
+                                for (size_t i = begin; i < end; ++i) {
+                                    bboxes[i]  = BBoxConvert(objects[i]->GetBoundingBox());
+                                    centers[i] = Vec3Convert(objects[i]->GetCenter());
+                                } });
+
+            typename bvh::v2::DefaultBuilder<Node>::Config config;
+            config.quality = bvh::v2::DefaultBuilder<Node>::Quality::High;
+            internal_bvh = bvh::v2::DefaultBuilder<Node>::build(thread_pool, bboxes, centers, config);
+        }
+        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
+        {
+            auto ray = Ray{
+                Vec3Convert(origin),                   // Ray origin
+                Vec3Convert(direction),                // Ray direction
+                0.0f,                                  // Minimum intersection distance
+                std::numeric_limits<float>::infinity() // Maximum intersection distance
+            };
+            static constexpr size_t stack_size = 64;
+            static constexpr bool use_robust_traversal = false;
+            bvh::v2::SmallStack<Bvh::Index, stack_size> stack;
+            IntersectInfo temp_intersect_info;
+            temp_intersect_info._time = intersect_info._time; // 时间要保持一致
+            int closest_index = -1;
+            internal_bvh.intersect<false, use_robust_traversal>(ray, internal_bvh.get_root().index, stack,
+                                                                [&](size_t begin, size_t end)
+                                                                {
+                                                                    for (size_t i = begin; i < end; ++i)
+                                                                    {
+                                                                        auto j = internal_bvh.prim_ids[i];
+                                                                        auto hit = objects[j]->Intersect(origin, direction, temp_intersect_info);
+                                                                        if (hit)
+                                                                        {
+                                                                            if (closest_index == -1 || temp_intersect_info._t < intersect_info._t)
+                                                                            {
+                                                                                intersect_info = temp_intersect_info;
+                                                                                closest_index = j;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    return closest_index != -1;
+                                                                });
+            if (closest_index == -1)
+            {
+                return false;
+            }
+            return true;
+        }
+    };
+
+#else
     template <typename AccelerableObject, std::enable_if_t<has_bounding_box<AccelerableObject>::value, bool> _ = true>
     class BVH
     {
@@ -204,7 +305,7 @@ namespace rendertoy
             node_tree.push_back(BVHNode{overall_bbox,
                                         left_node,
                                         right_node});
-#endif // USE_SAH
+#endif             // USE_SAH
 
             return static_cast<int>(node_tree.size()) - 1;
         }
@@ -216,7 +317,7 @@ namespace rendertoy
         std::vector<std::shared_ptr<AccelerableObject>> objects;
         void Construct()
         {
-            if(objects.empty())
+            if (objects.empty())
             {
                 return;
             }
@@ -225,7 +326,7 @@ namespace rendertoy
         }
         const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
         {
-            if(node_tree.empty())
+            if (node_tree.empty())
             {
                 return false;
             }
@@ -322,4 +423,5 @@ namespace rendertoy
             return true;
         }
     };
+#endif // USE_EXT_BVH
 }

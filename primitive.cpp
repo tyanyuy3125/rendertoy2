@@ -69,6 +69,11 @@ const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
     return _bbox;
 }
 
+const glm::vec3 rendertoy::TriangleMesh::GetCenter() const
+{
+    return _bbox.GetCenter();
+}
+
 const float rendertoy::TriangleMesh::GetArea() const
 {
     CRIT << "Not implemented." << std::endl;

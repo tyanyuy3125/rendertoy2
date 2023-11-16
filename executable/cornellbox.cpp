@@ -111,7 +111,7 @@ int main()
     conf.spp = 4;
     conf.gamma = 2.4f;
     conf.time = 0.0f;
-    PathTracingRenderWork renderwork(conf);
+    NormalRenderWork renderwork(conf);
     renderwork.Render();
     Image result = renderwork.GetResult(true);
 #ifdef _WIN32
