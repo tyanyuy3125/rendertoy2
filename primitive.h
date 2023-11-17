@@ -98,26 +98,6 @@ namespace rendertoy
         }
     };
 
-    class UVSphere : public Primitive
-    {
-        PRIMITIVE_METADATA(FUNDAMENTAL_PRIMITIVE)
-    private:
-        glm::vec3 _origin;
-        glm::float32 _radius;
-
-    public:
-        UVSphere(const glm::vec3 &origin, const float &radius);
-        virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
-        virtual const BBox GetBoundingBox() const;
-        virtual const float GetArea() const;
-        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
-        virtual const glm::vec3 GetCenter() const
-        {
-            CRIT<<"Not implemented"<<std::endl;
-            return glm::vec3(0.0f);
-        }
-    };
-
     class TriangleMesh : public Primitive
     {
         PRIMITIVE_METADATA(COMBINED_PRIMITIVE)
