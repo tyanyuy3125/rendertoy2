@@ -196,8 +196,8 @@ void rendertoy::PathTracingRenderWork::Render()
         bool specular_bounce = false;
         float eta = 1.0f;
         _render_config.camera->SpawnRay(screen_coord, origin, direction);
-        std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
-        // std::shared_ptr<Medium> medium = _render_config.scene->_global_medium;
+        // std::shared_ptr<Medium> medium = std::make_shared<HomogeneousMedium>(glm::vec3(0.0f), glm::vec3(0.1f), glm::vec3(0.0f), std::make_shared<HenyeyGreensteinPhaseFunction>(0.9f));
+        std::shared_ptr<Medium> medium = _render_config.scene->_global_medium;
         int medium_depth = 0;
         for (int depth = 0; depth < 8; ++depth)
         {

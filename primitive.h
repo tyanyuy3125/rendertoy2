@@ -42,6 +42,7 @@ namespace rendertoy
         virtual const SurfaceLight *GetSurfaceLight() const;
         virtual const float Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const;
         virtual const glm::vec3 GetNormal(const glm::vec2 &uv) const;
+        virtual const glm::vec3 GetCenter() const = 0;
         virtual ~Primitive() {}
 
         friend class Scene;
@@ -91,21 +92,10 @@ namespace rendertoy
         /// @return
         virtual const float Pdf(const glm::vec3 &observation_to_primitive, const glm::vec2 &uv) const;
         virtual const glm::vec3 GetNormal(const glm::vec2 &uv) const;
-    };
-
-    class UVSphere : public Primitive
-    {
-        PRIMITIVE_METADATA(FUNDAMENTAL_PRIMITIVE)
-    private:
-        glm::vec3 _origin;
-        glm::float32 _radius;
-
-    public:
-        UVSphere(const glm::vec3 &origin, const float &radius);
-        virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
-        virtual const BBox GetBoundingBox() const;
-        virtual const float GetArea() const;
-        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
+        virtual const glm::vec3 GetCenter() const
+        {
+            return (_vert[0] + _vert[1] + _vert[2]) / 3.0f;
+        }
     };
 
     class TriangleMesh : public Primitive
@@ -137,6 +127,7 @@ namespace rendertoy
         friend const std::vector<std::shared_ptr<TriangleMesh>> ImportMeshFromFile(const std::string &path);
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const final;
         virtual const BBox GetBoundingBox() const;
+        virtual const glm::vec3 GetCenter() const;
         virtual const float GetArea() const;
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
     };

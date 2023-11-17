@@ -127,11 +127,11 @@ int main()
     conf.scene = scene;
     conf.x_sample = 4;
     conf.y_sample = 4;
-    conf.spp = 32;
+    conf.spp = 1;
     conf.gamma = 2.2f;
     PathTracingRenderWork renderwork(conf);
     renderwork.Render();
-    Image result = renderwork.GetResult(false);
+    Image result = renderwork.GetResult(true);
 #ifdef _WIN32
     result.Export("E:/test3.png");
 #else

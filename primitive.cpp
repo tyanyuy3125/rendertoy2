@@ -69,6 +69,11 @@ const rendertoy::BBox rendertoy::TriangleMesh::GetBoundingBox() const
     return _bbox;
 }
 
+const glm::vec3 rendertoy::TriangleMesh::GetCenter() const
+{
+    return _bbox.GetCenter();
+}
+
 const float rendertoy::TriangleMesh::GetArea() const
 {
     CRIT << "Not implemented." << std::endl;
@@ -79,65 +84,6 @@ const void rendertoy::TriangleMesh::GenerateSamplePointOnSurface(glm::vec2 &uv, 
 {
     int idx = glm::linearRand<int>(0, static_cast<int>(this->triangles().size()) - 1);
     this->triangles()[idx]->GenerateSamplePointOnSurface(uv, coord, normal);
-}
-
-rendertoy::UVSphere::UVSphere(const glm::vec3 &origin, const float &radius)
-    : _origin(origin), _radius(radius)
-{
-}
-
-const bool rendertoy::UVSphere::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const
-{
-    glm::vec3 a = _origin - origin;
-    float l = glm::dot(direction, a);
-    float a2 = glm::dot(a, a);
-    float t = 0;
-    if (a2 > _radius * _radius && l < 0)
-    {
-        return false;
-    }
-    float m2 = a2 - l * l;
-    float R2 = _radius * _radius;
-    if (m2 > R2)
-    {
-        return false;
-    }
-    float q = sqrt(R2 - m2);
-    if (a2 > R2)
-    {
-        t = l - q;
-    }
-    else
-    {
-        t = l + q;
-    }
-    if (t < 1e-3)
-    {
-        return false;
-    }
-    intersect_info._t = t;
-    intersect_info._geometry_normal = glm::normalize(origin + t * direction - _origin);
-    if (glm::dot(intersect_info._geometry_normal, direction) > 0)
-    {
-        intersect_info._geometry_normal = -intersect_info._geometry_normal;
-    }
-    return true;
-}
-
-const rendertoy::BBox rendertoy::UVSphere::GetBoundingBox() const
-{
-    return BBox(_origin - glm::vec3(_radius), _origin + glm::vec3(_radius));
-}
-
-const float rendertoy::UVSphere::GetArea() const
-{
-    CRIT << "Not implemented." << std::endl;
-    return 0.0f;
-}
-
-const void rendertoy::UVSphere::GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
-{
-    return void();
 }
 
 const bool rendertoy::Triangle::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo RENDERTOY_FUNC_ARGUMENT_OUT intersect_info) const

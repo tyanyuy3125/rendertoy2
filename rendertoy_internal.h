@@ -9,12 +9,13 @@
 #include <glm/gtx/quaternion.hpp>
 
 #define RENDERTOY_FUNC_ARGUMENT_OUT &
+#define USE_EXT_BVH
 
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1463
-#define BUILD_DATE "2023-11-16+02:04:00"
+#define BUILD_NUMBER 1497
+#define BUILD_DATE "2023-11-17+19:20:37"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \

@@ -92,6 +92,7 @@ namespace rendertoy
     class PathTracingRenderWork : public IRenderWork
     {
         CLASS_METADATA_MARK(PathTracingRenderWork)
+
     public:
         virtual void Render();
         PathTracingRenderWork() = delete;
