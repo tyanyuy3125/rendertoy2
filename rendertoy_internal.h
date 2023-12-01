@@ -14,8 +14,8 @@
 template <typename T>
 T RENDERTOY_DISCARD_VARIABLE;
 
-#define BUILD_NUMBER 1511
-#define BUILD_DATE "2023-12-01+19:20:00"
+#define BUILD_NUMBER 1546
+#define BUILD_DATE "2023-12-02+02:41:25"
 
 #define CLASS_METADATA_MARK(classname)                              \
 public:                                                             \
@@ -83,6 +83,9 @@ namespace rendertoy
     class SpecularReflection;
     class TriangleMesh;
     struct VolumeInteraction;
+
+    using SDFFunction = std::function<float(glm::vec3)>;
+    using SDFGrad = std::function<glm::vec3(glm::vec3)>;
 
     inline float CosTheta(const glm::vec3 &w) { return w.z; }
     inline float Cos2Theta(const glm::vec3 &w) { return w.z * w.z; }

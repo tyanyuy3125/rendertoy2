@@ -197,7 +197,7 @@ const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &d
     // Sphere tracing algorithm
 
     float tmin, tmax;
-    if(!this->_bbox.Intersect(origin, direction, tmin, &tmax))
+    if (!this->_bbox.Intersect(origin, direction, tmin, &tmax))
     {
         return false;
     }
@@ -206,10 +206,10 @@ const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &d
     float current_sdf = std::numeric_limits<float>::infinity();
     float marched_distance = 0.0f;
 
-    while(true)
+    while (true)
     {
         current_sdf = _sdf_func(current_point);
-        if(current_sdf < 1e-6f)
+        if (current_sdf < 1e-6f)
         {
             intersect_info._uv = glm::vec2(0.0f);
             intersect_info._coord = current_point;
@@ -217,7 +217,10 @@ const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &d
             intersect_info._wo = -direction;
             intersect_info._primitive = (Primitive *)this;
             intersect_info._t = marched_distance;
-            intersect_info._shading_normal = _sdf_grad(current_point);
+            if (_sdf_grad)
+                intersect_info._shading_normal = _sdf_grad->operator()(current_point);
+            else
+                intersect_info._shading_normal = DifferentialGrad(current_point);
             intersect_info._geometry_normal = intersect_info._shading_normal;
             if (glm::dot(intersect_info._geometry_normal, direction) > 0.0f)
             {
@@ -228,9 +231,83 @@ const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &d
         }
         current_point += direction * current_sdf;
         marched_distance += current_sdf;
-        if(marched_distance >= tmax)
+        if (marched_distance >= tmax)
         {
             return false;
         }
     }
+}
+
+rendertoy::SDFFunction rendertoy::SDFUnion(const rendertoy::SDFFunction &a, const rendertoy::SDFFunction &b)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        return std::min(a(coord), b(coord));
+    };
+}
+
+rendertoy::SDFFunction rendertoy::SDFSmoothUnion(const rendertoy::SDFFunction &a, const rendertoy::SDFFunction &b, const float k)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        auto d2 = b(coord);
+        auto d1 = a(coord);
+        float h = glm::clamp( 0.5f + 0.5f*(d2-d1)/k, 0.0f, 1.0f );
+        return glm::mix( d2, d1, h ) - k*h*(1.0-h);
+    };
+}
+
+rendertoy::SDFFunction rendertoy::SDFIntersect(const rendertoy::SDFFunction &a, const rendertoy::SDFFunction &b)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        return std::max(a(coord), b(coord));
+    };
+}
+
+rendertoy::SDFFunction rendertoy::SDFRound(const SDFFunction &a, const float rad)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        return a(coord) - rad;
+    };
+}
+
+rendertoy::SDFFunction rendertoy::SDFTranslate(const SDFFunction &a, const glm::vec3 &p)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        return a(coord - p);
+    };
+}
+
+rendertoy::SDFFunction rendertoy::operator-(const rendertoy::SDFFunction &a)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        return -a(coord);
+    };
+}
+
+rendertoy::SDFFunction rendertoy::operator-(const rendertoy::SDFFunction &a, const rendertoy::SDFFunction &b)
+{
+    return SDFIntersect(a, -b);
+}
+
+rendertoy::SDFFunction rendertoy::operator+(const rendertoy::SDFFunction &a, const rendertoy::SDFFunction &b)
+{
+    return SDFUnion(a, b);
+}
+
+// https://iquilezles.org/articles/distfunctions/
+rendertoy::SDFFunction rendertoy::SDFTwist(const rendertoy::SDFFunction &a, const glm::vec3 &p, const float k)
+{
+    return [=](glm::vec3 coord) -> float
+    {
+        float c = std::cos(k * p.y);
+        float s = std::sin(k * p.y);
+        glm::mat2 m(c, -s, s, c);
+        glm::vec3 q(m * glm::vec2(p.x, p.z), p.y);
+        return a(q);
+    };
 }

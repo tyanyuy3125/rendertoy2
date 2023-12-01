@@ -132,24 +132,42 @@ namespace rendertoy
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
     };
 
+    SDFFunction SDFUnion(const SDFFunction &a, const SDFFunction &b);
+    SDFFunction SDFSmoothUnion(const SDFFunction &a, const SDFFunction &b, const float k = 0.2f);
+    SDFFunction SDFIntersect(const SDFFunction &a, const SDFFunction &b);
+    SDFFunction SDFRound(const SDFFunction &a, const float rad = 0.2f);
+    SDFFunction SDFTranslate(const SDFFunction &a, const glm::vec3 &p);
+    SDFFunction operator-(const SDFFunction &a);
+    SDFFunction operator-(const SDFFunction &a, const SDFFunction &b);
+    SDFFunction operator+(const SDFFunction &a, const SDFFunction &b);
+    SDFFunction SDFTwist(const SDFFunction &a, const glm::vec3 &p, const float k);
+
     class SDF : public Primitive
     {
         PRIMITIVE_METADATA(FUNDAMENTAL_PRIMITIVE)
-    public:
-        using SDFFunction = std::function<float(glm::vec3)>;
-        using SDFGrad = std::function<glm::vec3(glm::vec3)>;
 
     private:
         SDFFunction _sdf_func;
-        SDFGrad _sdf_grad;
+        std::optional<SDFGrad> _sdf_grad;
         BBox _bbox;
         float _area;
+
+        glm::vec3 DifferentialGrad(glm::vec3 point) const
+        {
+            float h = 0.001f;
+
+            float df_dx = (_sdf_func(glm::vec3(point.x + h, point.y, point.z)) - _sdf_func(point)) / h;
+            float df_dy = (_sdf_func(glm::vec3(point.x, point.y + h, point.z)) - _sdf_func(point)) / h;
+            float df_dz = (_sdf_func(glm::vec3(point.x, point.y, point.z + h)) - _sdf_func(point)) / h;
+
+            return glm::normalize(glm::vec3(df_dx, df_dy, df_dz));
+        };
 
     public:
         SDF() = delete;
         SDF(const SDF &) = delete;
-        SDF(SDFFunction sdf_func, SDFGrad sdf_grad, BBox bbox, float area)
-        : _sdf_func(sdf_func), _sdf_grad(sdf_grad), _bbox(bbox), _area(area) {}
+        SDF(SDFFunction sdf_func, BBox bbox, float area = 0.0f, std::optional<SDFGrad> sdf_grad = std::nullopt)
+            : _sdf_func(sdf_func), _bbox(bbox), _area(area), _sdf_grad(sdf_grad) {}
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const final;
         virtual const BBox GetBoundingBox() const
         {
@@ -161,6 +179,7 @@ namespace rendertoy
         }
         virtual const float GetArea() const
         {
+            if(_area == 0.0f) throw;
             return _area;
         }
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const

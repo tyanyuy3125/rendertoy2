@@ -13,11 +13,11 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 ### Rendering Techniques
 * BSDF Path Tracing
 * Direct Light Sampling (power weighted)
-* Approximated Volume Rendering (sampling light source(s) only, ignoring scattering)
-* Motion blur
+* Approximated Volume Rendering (Single Scattering)
+* Motion Blur
 * Depth of Field
 * HDRI Map (importance sampled)
-* SDF Sphere Tracing
+* SDF Ray Marching via Sphere Tracing
 ### Sampling Strategies
 * Adaptive Sampling
 * Multiple Importance Sampling
@@ -38,7 +38,9 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 ### Geometry
 * SAH-BVH
 * Normal mapping
-* SDF support
+* Mixed geometric representation
+    * Mesh
+    * SDF
 ### Post Processing & Visual Effects
 * Tone mapping
 * Custom aperture (rejection sampled)
