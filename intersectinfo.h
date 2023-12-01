@@ -18,7 +18,6 @@ namespace rendertoy
         Primitive *_primitive;
         glm::float32 _time = 0.0f;
 
-        bool _is_bsdf = true;
         const glm::mat3 GenerateSurfaceCoordinates() const;
     };
 

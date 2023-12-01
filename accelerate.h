@@ -34,7 +34,7 @@ namespace rendertoy
     public:
         BBox(glm::vec3 pmin, glm::vec3 pmax) : _pmin(pmin), _pmax(pmax) {}
         BBox() : BBox(glm::vec3{std::numeric_limits<float>::max()}, glm::vec3{std::numeric_limits<float>::min()}) {}
-        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t) const;
+        const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t, float *tmax = nullptr) const;
         const glm::vec3 GetCenter() const;
         void Union(const BBox &a);
         void Union(const glm::vec3 &p);

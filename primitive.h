@@ -131,4 +131,28 @@ namespace rendertoy
         virtual const float GetArea() const;
         virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
     };
+
+    class SDF : public Primitive
+    {
+        PRIMITIVE_METADATA(FUNDAMENTAL_PRIMITIVE)
+    public:
+        using SDFFunction = std::function<float(glm::vec3)>;
+        using SDFGrad = std::function<glm::vec3(glm::vec3)>;
+
+    private:
+        SDFFunction _sdf_func;
+        SDFGrad _sdf_grad;
+        BBox _bbox;
+
+    public:
+        SDF() = delete;
+        SDF(const SDF &) = delete;
+        SDF(SDFFunction sdf_func, SDFGrad sdf_grad, BBox bbox)
+        : _sdf_func(sdf_func), _sdf_grad(sdf_grad), _bbox(bbox) {}
+        virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const final;
+        virtual const BBox GetBoundingBox() const;
+        virtual const glm::vec3 GetCenter() const;
+        virtual const float GetArea() const;
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
+    };
 }

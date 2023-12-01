@@ -112,6 +112,7 @@
         "queue": "cpp",
         "numbers": "cpp",
         "cinttypes": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "stdfloat": "cpp"
     }
 }

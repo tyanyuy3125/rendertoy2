@@ -191,3 +191,45 @@ const glm::vec3 rendertoy::Primitive::GetNormal(const glm::vec2 &uv) const
 {
     return glm::vec3(0.0f);
 }
+
+const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const
+{
+    // Sphere tracing algorithm
+
+    float tmin, tmax;
+    if(!this->_bbox.Intersect(origin, direction, tmin, &tmax))
+    {
+        return false;
+    }
+
+    glm::vec3 current_point = origin;
+    float current_sdf = std::numeric_limits<float>::infinity();
+    float marched_distance = 0.0f;
+
+    while(true)
+    {
+        current_sdf = _sdf_func(current_point);
+        if(current_sdf < 1e-6f)
+        {
+            intersect_info._uv = glm::vec2(0.0f);
+            intersect_info._coord = current_point;
+            intersect_info._mat = _mat;
+            intersect_info._wo = -direction;
+            intersect_info._primitive = (Primitive *)this;
+            intersect_info._t = marched_distance;
+            intersect_info._shading_normal = _sdf_grad(current_point);
+            intersect_info._geometry_normal = intersect_info._shading_normal;
+            if (glm::dot(intersect_info._geometry_normal, direction) > 0.0f)
+            {
+                intersect_info._geometry_normal = -intersect_info._geometry_normal;
+            }
+            return true;
+        }
+        current_point += direction * current_sdf;
+        marched_distance += current_sdf;
+        if(marched_distance >= tmax)
+        {
+            return false;
+        }
+    }
+}
