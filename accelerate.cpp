@@ -4,7 +4,7 @@
 #include <cmath>
 #include <optional>
 
-const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t, float *tmax) const
+const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &direction, float &t, float *t_max) const
 {
     glm::vec3 inv_direction = 1.0f / direction;
 
@@ -30,9 +30,9 @@ const bool rendertoy::BBox::Intersect(const glm::vec3 &origin, const glm::vec3 &
             t = t_enter;
         }
 
-        if(tmax)
+        if(t_max)
         {
-            *tmax = t_exit;
+            *t_max = t_exit;
         }
 
         return true;

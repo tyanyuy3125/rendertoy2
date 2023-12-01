@@ -17,6 +17,7 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Motion blur
 * Depth of Field
 * HDRI Map (importance sampled)
+* SDF Sphere Tracing
 ### Sampling Strategies
 * Adaptive Sampling
 * Multiple Importance Sampling
@@ -36,7 +37,8 @@ RenderToy2 是清华大学交叉信息研究院2023年秋课程《高等计算�
 * Texture Mapping (similar to pbrt and Cycles, use `ISamplable<T>` to abstract the texture type)
 ### Geometry
 * SAH-BVH
-* Bump mapping
+* Normal mapping
+* SDF support
 ### Post Processing & Visual Effects
 * Tone mapping
 * Custom aperture (rejection sampled)

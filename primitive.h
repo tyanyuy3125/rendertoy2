@@ -143,16 +143,30 @@ namespace rendertoy
         SDFFunction _sdf_func;
         SDFGrad _sdf_grad;
         BBox _bbox;
+        float _area;
 
     public:
         SDF() = delete;
         SDF(const SDF &) = delete;
-        SDF(SDFFunction sdf_func, SDFGrad sdf_grad, BBox bbox)
-        : _sdf_func(sdf_func), _sdf_grad(sdf_grad), _bbox(bbox) {}
+        SDF(SDFFunction sdf_func, SDFGrad sdf_grad, BBox bbox, float area)
+        : _sdf_func(sdf_func), _sdf_grad(sdf_grad), _bbox(bbox), _area(area) {}
         virtual const bool Intersect(const glm::vec3 &origin, const glm::vec3 &direction, IntersectInfo &intersect_info) const final;
-        virtual const BBox GetBoundingBox() const;
-        virtual const glm::vec3 GetCenter() const;
-        virtual const float GetArea() const;
-        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const;
+        virtual const BBox GetBoundingBox() const
+        {
+            return _bbox;
+        }
+        virtual const glm::vec3 GetCenter() const
+        {
+            return _bbox.GetCenter();
+        }
+        virtual const float GetArea() const
+        {
+            return _area;
+        }
+        virtual const void GenerateSamplePointOnSurface(glm::vec2 &uv, glm::vec3 &coord, glm::vec3 &normal) const
+        {
+            // SDF primitive does not support generating sample point on surface.
+            throw;
+        }
     };
 }

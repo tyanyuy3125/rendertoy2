@@ -223,6 +223,7 @@ const bool rendertoy::SDF::Intersect(const glm::vec3 &origin, const glm::vec3 &d
             {
                 intersect_info._geometry_normal = -intersect_info._geometry_normal;
             }
+            intersect_info._coord += 1e-4f * intersect_info._shading_normal;
             return true;
         }
         current_point += direction * current_sdf;
