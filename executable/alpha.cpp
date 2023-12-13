@@ -42,14 +42,15 @@ int main()
     // std::shared_ptr<IMaterial> mat_metal;
     scene->objects()[0]->mat() = mat_white;
     scene->objects()[1]->mat() = mat_alpha;
-    scene->lights().push_back(std::make_shared<DeltaLight>(glm::vec3(1.0f), 50.0f, glm::vec3(2.0f, 4.0f, 2.0f)));
+    // scene->lights().push_back(std::make_shared<DeltaLight>(glm::vec3(1.0f), 50.0f, glm::vec3(2.0f, 4.0f, 2.0f)));
+    scene->lights().push_back(std::make_shared<DirectionalLight>(glm::vec3(1.0f), 1.0f, glm::normalize(glm::vec3(0.0f, 0.5f, 1.0f))));
 
     scene->Init();
     INFO << "Scene inited." << std::endl;
     std::shared_ptr<ISamplableColor> hdr_bg = std::make_shared<ColorTexture>(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
     scene->hdr_background() = hdr_bg;
 
-    std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{-2.0f, 2.0f, 2.0f}, glm::vec3{-1.0f, 1.0f, -1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(45.0f), 16.0f / 9.0f);
+    std::shared_ptr<Camera> camera = std::make_shared<Camera>(glm::vec3{3.0f, 3.0f, 3.0f}, glm::vec3{1.0f, 1.0f, -1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}, glm::radians(30.0f), 16.0f / 9.0f);
 
     RenderConfig conf;
     conf.width = 1920;

@@ -82,6 +82,30 @@ namespace rendertoy
         }
     };
 
+    class DirectionalLight : public Light
+    {
+    private:
+        glm::vec3 _color;
+        float _strength;
+        glm::vec3 _direction;
+
+    public:
+        DirectionalLight() = delete;
+        DirectionalLight(const glm::vec3 &color, const float strength, const glm::vec3 &direction)
+            : _color(color), _strength(strength), _direction(direction) {}
+
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const;
+        virtual const glm::vec3 Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const;
+        virtual const glm::vec3 Sample_Le(const glm::vec3 &last_origin, const IntersectInfo &intersect_info, float &pdf) const
+        {
+            return glm::vec3(0.0f);
+        }
+        virtual const float Phi() const
+        {
+            return 1.0f; // TODO: 不符合实际
+        }
+    };
+
     class LightSampler
     {
     private:

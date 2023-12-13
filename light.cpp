@@ -194,3 +194,36 @@ const glm::vec3 rendertoy::HDRILight::Sample_Le(const glm::vec3 &last_origin, co
     glm::vec2 st(SphericalPhi(w) * glm::one_over_two_pi<float>(), SphericalTheta(w) * glm::one_over_pi<float>());
     return _hdri_map->operator()(int(st.x * _hdri_map->width()), int(st.y * _hdri_map->height()));
 }
+
+const glm::vec3 rendertoy::DirectionalLight::Sample_Ld(const Scene &scene, const IntersectInfo &intersect_info, float &pdf, glm::vec3 &direction, const bool consider_normal, bool &do_heuristic) const
+{
+    do_heuristic = false;
+    pdf = 1.0f;
+    if ((consider_normal && glm::dot(_direction, intersect_info._geometry_normal) < 0.0f))
+    {
+        return glm::vec3(0.0f);
+    }
+    direction = _direction;
+    IntersectInfo shadow_ray_intersect_info;
+    shadow_ray_intersect_info._time = intersect_info._time;
+    bool intersected = scene.Intersect(intersect_info._coord, _direction, shadow_ray_intersect_info);
+    if (!intersected)
+    {
+        return _color * _strength;
+    }
+    return glm::vec3(0.0f);
+}
+
+const glm::vec3 rendertoy::DirectionalLight::Sample_Ld(const Scene &scene, const glm::vec3 &view_point, glm::vec3 &direction, float &pdf, bool &do_heuristic) const
+{
+    do_heuristic = false;
+    pdf = 1.0f;
+    direction = _direction;
+    IntersectInfo shadow_ray_intersect_info; // TODO: 这一部分代码有bug。
+    bool intersected = scene.Intersect(view_point, _direction, shadow_ray_intersect_info);
+    if (!intersected)
+    {
+        return _color * _strength;
+    }
+    return glm::vec3(0.0f);
+}
