@@ -43,15 +43,7 @@ namespace rendertoy
         Logger &operator<<(const T &message)
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            std::cout << message;
-            return *this;
-        }
-
-        template <>
-        Logger &operator<<(const LogLevel &loglevel)
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            std::cout << log_level_string[static_cast<int>(loglevel)] << " ";
+            log_impl(message);
             return *this;
         }
 
@@ -79,6 +71,17 @@ namespace rendertoy
 
         Logger(const Logger &) = delete;            // Delete copy constructor
         Logger &operator=(const Logger &) = delete; // Delete copy assignment operator
+
+        template <typename T>
+        void log_impl(const T &message)
+        {
+            std::cout << message;
+        }
+
+        void log_impl(const LogLevel &loglevel)
+        {
+            std::cout << log_level_string[static_cast<int>(loglevel)] << " ";
+        }
 
         static void printTimestamp()
         {
